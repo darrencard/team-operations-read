@@ -1,0 +1,7 @@
+{
+  "name": "team-operations-read",
+  "version": "0.1.0",
+  "description": "Score how a product team works against Dacard's Team Operations framework from tracker and source-control exports. Every figure is computed in code and cites its source, and the read claims no stage the evidence does not support.",
+  "author": { "name": "Dacard" },
+  "license": "MIT"
+}
