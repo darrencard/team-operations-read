@@ -19,6 +19,7 @@ from framework import BY_ID
 ROLES_FOR_CROSS_FUNCTIONAL = {"pm", "design", "eng"}
 RETRO_CLOSE_DAYS = 30
 MIN_ITEMS_PER_TYPE = 10
+MIN_ROWS_PER_SQUAD = 10
 
 
 def nearest_rank(values: list[float], pct: float) -> float:
@@ -64,6 +65,17 @@ class Ledger:
 
 def _in(d: date | None, start: date, end: date) -> bool:
     return d is not None and start <= d <= end
+
+
+def _by_squad(led: Ledger, key: str, label: str, rows: list[dict], value, unit: str, source: str) -> None:
+    """Median per squad, for squads with enough rows. Context for a read, never a bound."""
+    groups = defaultdict(list)
+    for r in rows:
+        if r["squad"]:
+            groups[r["squad"]].append(value(r))
+    for squad, vals in sorted(groups.items()):
+        if len(vals) >= MIN_ROWS_PER_SQUAD:
+            led.add(f"{key}.squad.{squad}", f"{label}, {squad}", statistics.median(vals), unit, source, len(vals), f"median for squad {squad}")
 
 
 def _items(led: Ledger, items: list[dict], cycles: list[dict] | None, start: date, end: date) -> None:
@@ -114,18 +126,22 @@ def _items(led: Ledger, items: list[dict], cycles: list[dict] | None, start: dat
                 f"fastest over slowest work-type median, types with {MIN_ITEMS_PER_TYPE} or more completed items",
             )
 
-        reopened = sum(1 for r in done if r["reopened"] > 0)
+        _by_squad(led, "cycle_time", "Cycle time, median", done, lambda r: (r["completed"] - r["started"]).days, "days", "items.csv")
+
+    done_r = [r for r in done if r["reopened"] is not None]
+    if done_r:
+        reopened = sum(1 for r in done_r if r["reopened"] > 0)
         led.add(
             "reopen_rate",
             "Share of completed items reopened",
-            reopened / len(done),
+            reopened / len(done_r),
             "share",
             "items.csv",
-            len(done),
+            len(done_r),
             "items with reopened above 0, of items completed in the window",
         )
 
-    started = [r for r in items if _in(r["started"], start, end)]
+    started = [r for r in items if _in(r["started"], start, end) and r["acceptance_criteria"] is not None]
     if started:
         ac = sum(1 for r in started if r["acceptance_criteria"])
         led.add(
@@ -163,7 +179,7 @@ def _items(led: Ledger, items: list[dict], cycles: list[dict] | None, start: dat
     if cycles:
         in_window = [c for c in cycles if start <= c["end"] <= end]
         names = {c["cycle"]: c for c in in_window}
-        scoped = [r for r in items if r["cycle"] in names]
+        scoped = [r for r in items if r["cycle"] in names and r["planned"] is not None]
         if in_window and scoped:
             led.add(
                 "cycles_in_window", "Cycles ending in the window", len(in_window), "count", "cycles.csv", len(in_window), "cycles whose end falls in the window"
@@ -193,6 +209,18 @@ def _items(led: Ledger, items: list[dict], cycles: list[dict] | None, start: dat
 
 
 def _prs(led: Ledger, prs: list[dict], start: date, end: date) -> None:
+    in_window = [p for p in prs if _in(p["opened"].date(), start, end)]
+    if in_window and in_window[0].get("author") is not None:
+        authors = {p["author"] for p in in_window if p["author"]}
+        led.add(
+            "pr_authors",
+            "Pull request authors",
+            len(authors),
+            "count",
+            "pull_requests.csv",
+            len(in_window),
+            "distinct authors of pull requests opened in the window",
+        )
     opened = [p for p in prs if _in(p["opened"].date(), start, end) and p["first_review"]]
     if opened:
         hours = [(p["first_review"] - p["opened"]).total_seconds() / 3600 for p in opened]
@@ -214,7 +242,16 @@ def _prs(led: Ledger, prs: list[dict], start: date, end: date) -> None:
             len(opened),
             "nearest rank, calendar hours",
         )
-    merged = [p for p in prs if p["merged"] and _in(p["merged"].date(), start, end)]
+        _by_squad(
+            led,
+            "review_wait",
+            "Time to first review, median",
+            opened,
+            lambda p: (p["first_review"] - p["opened"]).total_seconds() / 3600,
+            "hours",
+            "pull_requests.csv",
+        )
+    merged = [p for p in prs if p["merged"] and _in(p["merged"].date(), start, end) and p["approvals"] is not None]
     if merged:
         approved = sum(1 for p in merged if p["approvals"] >= 1)
         led.add(

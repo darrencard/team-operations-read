@@ -220,3 +220,13 @@ class RepoFiles(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StartHere(unittest.TestCase):
+    def test_acme_starts_with_roadmap_and_names_the_figure_to_watch(self):
+        doc = acme()
+        self.assertEqual(doc["start_here"]["dimension"], "roadmap_discipline")
+        self.assertEqual(doc["start_here"]["watch"], "unplanned_share")
+        md = render(doc)
+        self.assertIn("**Watch:** Share of cycle work added after the cycle started, now 43%.", md)
+        self.assertIn("2026-12-20", md)

@@ -6,7 +6,7 @@ One folder of CSV files with a header row. Every file is optional. Dates are `YY
 |---|---|---|
 | `items.csv` | id, type, squad, assignee, created, started, completed, cycle, planned, reopened, acceptance_criteria | Delivery Velocity, Spec & Context Quality, Roadmap Discipline, Team Orchestration |
 | `cycles.csv` | cycle, start, end | Roadmap Discipline |
-| `pull_requests.csv` | id, squad, opened, first_review, merged, approvals | Team Orchestration, Quality & Experimentation |
+| `pull_requests.csv` | id, squad, opened, first_review, merged, approvals, author | Team Orchestration, Quality & Experimentation |
 | `squads.csv` | squad, roles | Team Orchestration |
 | `epics.csv` | id, squad, success_criteria | Roadmap Discipline |
 | `retro_actions.csv` | id, squad, raised, closed | Process & Iteration |
@@ -22,8 +22,29 @@ One folder of CSV files with a header row. Every file is optional. Dates are `YY
 - **retro_actions.csv.** One row per action raised in a retro. `closed` is blank if still open.
 - **survey.csv.** One row per respondent per dimension. `dimension` is a Team Operations dimension id from `scripts/framework.py` (for example `design_dev_handoff`). `score` is 1 to 5. A dimension needs 5 or more responses before its team view is shown.
 
-## Mapping a tool's export
+Optional columns: `cycle`, `planned`, `reopened` and `acceptance_criteria` in items.csv, and `approvals` and `author` in pull_requests.csv. Leave a column out when the export does not hold it; the figures that need it are not computed.
 
-Linear: issues export gives id, type (label), team (squad), assignee, created, started, completed and cycle. `planned` is true when the issue was added to the cycle on or before the cycle start. Jira: use the sprint report for `planned`. GitHub: the pulls API gives opened (`created_at`), merged (`merged_at`); the reviews API gives `first_review` and `approvals`.
+## Readers
 
-If a column is not in the export, leave the file out. Do not fill a column with a guess.
+**GitHub.** `scripts/from_github.py` reads `gh pr list --json number,createdAt,mergedAt,isDraft,author,reviews,labels` output and writes pull_requests.csv. It drops bot authors and drafts, ignores self-reviews, and counts an approval only when a reviewer's latest review is APPROVED. Squad comes from `--squad` or a label prefix such as `squad:`. Repeat `--input` for several repositories.
+
+**Any tracker CSV.** `scripts/from_csv.py --target items` maps columns by name. Check the header of your own export first; column names change between tools and versions. Example mappings (assumptions to check against your file):
+
+```bash
+# Linear issues export
+python3 scripts/from_csv.py --input linear.csv --target items --out run/data \
+  --map id=ID --map squad=Team --map assignee=Assignee --map created=Created \
+  --map started=Started --map completed=Completed --map type=Labels --map cycle="Cycle Name" \
+  --type-values bug,feature,chore,improvement
+
+# Jira issues export
+python3 scripts/from_csv.py --input jira.csv --target items --out run/data \
+  --map id="Issue key" --map type="Issue Type" --map squad="Project name" --map assignee=Assignee \
+  --map created=Created --map started="Start date" --map completed=Resolved --map cycle=Sprint
+```
+
+`planned` (in the cycle at its start) is rarely a column in a plain export. Jira's sprint report and Linear's cycle history hold it; add it only from one of those.
+
+Jira often exports dates as `18/Nov/26 10:22 AM`; set the export to ISO dates first, or the read stops with the file, line and column. A mapped `cycle` must match a `cycle` in cycles.csv.
+
+If a column is not in the export, leave the column out. Do not fill it with a guess.

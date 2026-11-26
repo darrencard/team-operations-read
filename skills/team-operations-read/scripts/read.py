@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -22,6 +22,7 @@ from metrics import compute  # noqa: E402
 from rules import describe, read_all  # noqa: E402
 
 VERSION = "0.1.0"
+RECHECK_DAYS = 30
 
 
 def cell(text: object) -> str:
@@ -30,6 +31,12 @@ def cell(text: object) -> str:
     for ch in "<>`*_[]":
         s = s.replace(ch, "\\" + ch)
     return s
+
+
+def _watch(doc: dict, sh: dict) -> str:
+    f = doc["figures"].get(sh["watch"]) if sh["watch"] else None
+    what = f"{cell(f['label'])}, now {f['display']}" if f else "the figures behind it"
+    return f"**Watch:** {what}. Re-run this read on {doc['recheck_on']} with the same window to see whether it moved."
 
 
 def build(data_dir: Path, as_of: date, window_days: int, company: str | None) -> dict:
@@ -45,6 +52,7 @@ def build(data_dir: Path, as_of: date, window_days: int, company: str | None) ->
         "as_of": as_of.isoformat(),
         "window": m["window"],
         "sources": sorted(k for k in data),
+        "recheck_on": (as_of + timedelta(days=RECHECK_DAYS)).isoformat(),
         "figures": m["figures"],
         **r,
     }
@@ -69,6 +77,20 @@ def render(doc: dict) -> str:
         lines += [f"**Overall:** Stage {ov['stage']} ({ov['stage_name']}), {ov['total']} of 135.", ""]
     else:
         lines += [f"**Overall:** no stage claimed. {ov['why']}", ""]
+    sh = doc["start_here"]
+    if not sh:
+        lines += [
+            "**Start here:** no dimension is bounded yet: the data is below every rule's minimum sample or inside every threshold. "
+            "The quickest addition is squads.csv (one row per squad with its roles), then items.csv from your tracker. See references/inputs.md.",
+            "",
+        ]
+    else:
+        lines += [
+            f"**Start here:** {sh['name']}. {cell(sh['next_step'])}",
+            "",
+            _watch(doc, sh),
+            "",
+        ]
 
     lines += ["| Dimension | Function | Read | Next step |", "|---|---|---|---|"]
     for d in read:
@@ -78,13 +100,23 @@ def render(doc: dict) -> str:
     for d in read:
         lines += [f"## {d['name']}: {describe(d)}", "", f"*{d['question']}*", ""]
         for f in d["findings"]:
-            mark = "" if f["bound"] else " (not scored)"
+            mark = "" if f["bound"] else (" (context, not scored)" if f.get("context") else " (not scored)")
             lines.append(f"- {cell(f['says'])}{mark} [{f['rule']}]")
         if d["survey"]:
             lines.append(f"- {d['survey']['says']}")
         if d["survey_disagrees"]:
             lines.append(f"- {d['survey_disagrees']}")
         lines += ["", f"**Next step:** {d['next_step']}", ""]
+
+    lines += [
+        "## How to use this read",
+        "",
+        "- It reads how work moves through the team, not whether what shipped worked. Pair it with outcome data before judging the team.",
+        "- Do not turn these figures into targets. A team pushed to cut review wait or reopens can hit the number and miss the point. Use them to pick where to look.",
+        "- The thresholds are Dacard v0.1 heuristics, not industry benchmarks. Treat each bound as a hypothesis to test with the team.",
+        "- Read a gap with the squad that owns it before acting. The slowest squads are where to ask questions, not who to blame.",
+        "",
+    ]
 
     lines += ["## Not read", ""]
     for fn in FUNCTIONS:
@@ -106,7 +138,7 @@ def render(doc: dict) -> str:
         "|---|---|---|---|---|",
     ]
     for f in figs.values():
-        lines.append(f"| {f['label']}{tag} | {f['display']} | {f['source']} | {f['n']} | {f['method']} |")
+        lines.append(f"| {cell(f['label'])}{tag} | {f['display']} | {f['source']} | {f['n']} | {f['method']} |")
     lines.append("")
     return "\n".join(lines)
 

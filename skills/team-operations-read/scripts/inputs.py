@@ -29,12 +29,15 @@ class Spec:
     bools: tuple[str, ...] = ()
     optional_times: tuple[str, ...] = ()
     times: tuple[str, ...] = ()
+    # Columns a file may leave out. A missing column is None on every row, and its figures are not computed.
+    optional: tuple[str, ...] = ()
 
 
 SPECS = {
     "items": Spec(
         "items.csv",
-        ("id", "type", "squad", "assignee", "created", "started", "completed", "cycle", "planned", "reopened", "acceptance_criteria"),
+        ("id", "type", "squad", "assignee", "created", "started", "completed"),
+        optional=("cycle", "planned", "reopened", "acceptance_criteria"),
         dates=("created",),
         optional_dates=("started", "completed"),
         ints=("reopened",),
@@ -43,7 +46,8 @@ SPECS = {
     "cycles": Spec("cycles.csv", ("cycle", "start", "end"), dates=("start", "end")),
     "pull_requests": Spec(
         "pull_requests.csv",
-        ("id", "squad", "opened", "first_review", "merged", "approvals"),
+        ("id", "squad", "opened", "first_review", "merged"),
+        optional=("approvals", "author"),
         times=("opened",),
         optional_times=("first_review", "merged"),
         ints=("approvals",),
@@ -74,7 +78,7 @@ def _time(value: str, where: str) -> datetime:
     return t if t.tzinfo else t.replace(tzinfo=UTC)
 
 
-def _row(spec: Spec, raw: dict, line: int) -> dict:
+def _row(spec: Spec, raw: dict, line: int, absent: set[str]) -> dict:
     row = {k: (v or "").strip() for k, v in raw.items() if k is not None}
     for col in spec.dates:
         row[col] = _date(row[col], f"{spec.filename} line {line} column {col}")
@@ -85,15 +89,21 @@ def _row(spec: Spec, raw: dict, line: int) -> dict:
     for col in spec.optional_times:
         row[col] = _time(row[col], f"{spec.filename} line {line} column {col}") if row[col] else None
     for col in spec.ints:
+        if col in absent:
+            continue
         try:
             row[col] = int(row[col] or "0")
         except ValueError:
             raise InputError(f"{spec.filename} line {line} column {col}: expected a whole number, got {row[col]!r}") from None
     for col in spec.bools:
+        if col in absent:
+            continue
         v = row[col].lower()
         if v not in TRUE | FALSE:
             raise InputError(f"{spec.filename} line {line} column {col}: expected true or false, got {row[col]!r}")
         row[col] = v in TRUE
+    for col in absent:
+        row[col] = None
     return row
 
 
@@ -103,7 +113,8 @@ def load_file(path: Path, spec: Spec) -> list[dict]:
         missing = [c for c in spec.required if c not in (reader.fieldnames or [])]
         if missing:
             raise InputError(f"{spec.filename}: missing column(s) {', '.join(missing)}")
-        return [_row(spec, raw, i) for i, raw in enumerate(reader, start=2)]
+        absent = {c for c in spec.optional if c not in (reader.fieldnames or [])}
+        return [_row(spec, raw, i, absent) for i, raw in enumerate(reader, start=2)]
 
 
 def _check(data: dict) -> None:

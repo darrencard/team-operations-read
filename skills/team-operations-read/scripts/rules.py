@@ -20,6 +20,7 @@ MIN_SQUADS = 4
 MIN_EPICS = 5
 MIN_RETRO_ACTIONS = 5
 MIN_SURVEY_RESPONSES = 5
+MIN_PR_AUTHORS = 3
 
 # What a dimension needs before it can be read at all. Dimensions not listed here are not read from
 # tracker, source-control or survey data; they need a full Dacard read of the artefacts named.
@@ -54,6 +55,24 @@ def _skip(rule: str, figures: list[str], why: str) -> dict:
     return {"rule": rule, "figures": figures, "bound": None, "says": why, "next_step": None, "skipped": True}
 
 
+def _slowest(figs: dict, key: str, what: str) -> list[dict]:
+    """Context: the 3 slowest squads on one figure. Shows where to look; never sets a bound."""
+    rows = sorted((f for fid, f in figs.items() if fid.startswith(f"{key}.squad.")), key=lambda f: -f["value"])[:3]
+    if len(rows) < 2:
+        return []
+    names = ", ".join(f"{f['label'].rsplit(', ', 1)[1]} ({f['display']})" for f in rows)
+    return [
+        {
+            "rule": f"{key}.by_squad",
+            "figures": [f["id"] for f in rows],
+            "bound": None,
+            "says": f"Slowest squads by {what}: {names}.",
+            "next_step": None,
+            "context": True,
+        }
+    ]
+
+
 def _delivery_velocity(figs: dict) -> list[dict]:
     out = []
     lr, ct = _f(figs, "lane_ratio"), _f(figs, "cycle_time_median")
@@ -83,7 +102,7 @@ def _delivery_velocity(figs: dict) -> list[dict]:
                 "Give the most common small work type its own lane with a shorter path to production, then compare its cycle time next quarter.",
             )
         )
-    return out
+    return out + _slowest(figs, "cycle_time", "median cycle time")
 
 
 def _roadmap_discipline(figs: dict) -> list[dict]:
@@ -187,6 +206,11 @@ def _spec_context_quality(figs: dict) -> list[dict]:
     return out
 
 
+def _too_few_authors(figs: dict) -> bool:
+    a = figs.get("pr_authors")
+    return a is not None and a["value"] < MIN_PR_AUTHORS
+
+
 def _team_orchestration(figs: dict) -> list[dict]:
     out = []
     cf, rw, wip = _f(figs, "cross_functional_squads"), _f(figs, "review_wait_median"), _f(figs, "wip_per_person")
@@ -212,7 +236,11 @@ def _team_orchestration(figs: dict) -> list[dict]:
                 "Pilot one squad with product, design and engineering on a single goal for a quarter.",
             )
         )
-    if rw is None or rw["n"] < MIN_PRS:
+    if _too_few_authors(figs):
+        out.append(
+            _skip("team_orchestration.review_wait", ["pr_authors"], f"Fewer than {MIN_PR_AUTHORS} pull request authors, so review data is not a team signal.")
+        )
+    elif rw is None or rw["n"] < MIN_PRS:
         out.append(_skip("team_orchestration.review_wait", ["review_wait_median"], f"Fewer than {MIN_PRS} reviewed pull requests in the window."))
     elif rw["value"] > 24:
         out.append(
@@ -234,6 +262,8 @@ def _team_orchestration(figs: dict) -> list[dict]:
                 "Set a WIP limit of 2 per person on the board and swarm on blocked items before starting new ones.",
             )
         )
+    if rw is not None and rw["value"] > 24:
+        out += _slowest(figs, "review_wait", "median time to first review")
     return out
 
 
@@ -288,7 +318,13 @@ def _quality_experimentation(figs: dict) -> list[dict]:
                     "Run one A/B test on a live decision this quarter, with the metric and stop rule written first.",
                 )
             )
-    if rc is None or rc["n"] < MIN_PRS:
+    if _too_few_authors(figs):
+        out.append(
+            _skip(
+                "quality_experimentation.review_gate", ["pr_authors"], f"Fewer than {MIN_PR_AUTHORS} pull request authors, so review data is not a team signal."
+            )
+        )
+    elif rc is None or rc["n"] < MIN_PRS:
         out.append(_skip("quality_experimentation.review_gate", ["review_coverage"], f"Fewer than {MIN_PRS} merged pull requests in the window."))
     elif rc["value"] < 0.80:
         out.append(
@@ -385,7 +421,21 @@ def read_all(figs: dict) -> dict:
         overall["why"] = (
             f"An overall Team Operations stage needs a single-stage read on all 27 dimensions. This read has {len(exact)}, so no overall stage or level is claimed."
         )
-    return {"dimensions": dims, "overall": overall}
+    return {"dimensions": dims, "overall": overall, "start_here": start_here(dims)}
+
+
+def start_here(dims: list[dict]) -> dict | None:
+    """The one next step to take first: a conflict, else the lowest ceiling, else the lowest floor.
+    Ties go to framework order. None when nothing is read."""
+    read = [d for d in dims if d["read"] != "not_read"]
+    if not read:
+        return None
+    rank = {"conflict": 0}
+    pick = min(read, key=lambda d: (rank.get(d["read"], 1), d["ceiling"], d["floor"]))
+    # The figure to watch: the first figure behind the bound that set the next step.
+    source = next((f for f in pick["findings"] if f["bound"] and f["next_step"] == pick["next_step"]), None)
+    watch = source["figures"][0] if source and source["figures"] else None
+    return {"dimension": pick["id"], "name": pick["name"], "next_step": pick["next_step"], "watch": watch}
 
 
 def describe(d: dict) -> str:

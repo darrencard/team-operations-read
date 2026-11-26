@@ -13,6 +13,19 @@ Reads a folder of exports and scores the dimensions of Dacard's Team Operations 
 
 Everything runs locally. The scripts make no network calls. Do not send the user's data anywhere.
 
+## Quick start: first read from GitHub alone
+
+Pull request data alone bounds Team Orchestration and Quality & Experimentation only when review is slow or ungated; otherwise the read shows the figures and names the quickest file to add (squads.csv). Ask for the repository and the as-of date, then:
+
+```bash
+mkdir -p run
+gh pr list --repo OWNER/NAME --state all --limit 1000 --json number,createdAt,mergedAt,isDraft,author,reviews,labels > run/prs.json
+python3 scripts/from_github.py --input run/prs.json --out run/data --squad-label-prefix squad:
+python3 scripts/read.py --data run/data --as-of YYYY-MM-DD --out run
+```
+
+Then add tracker exports (step 1) to read more dimensions. To see a full read first, run it on the invented Acme sample: `python3 scripts/read.py --data ../../evals/fixtures/acme --as-of 2026-11-20 --out run`.
+
 ## The 4 rules that override everything else
 
 1. **Never do arithmetic yourself.** `scripts/read.py` computes every figure and writes it to the evidence ledger. If a number is not in `run/read.json`, do not state it.
@@ -45,7 +58,7 @@ Ask for:
 - The exports they have, as CSV files in one folder. All are optional. `references/inputs.md` lists each file, its columns and which dimensions it feeds. The core four are `items.csv` (tracker issues), `cycles.csv` (sprints or cycles), `pull_requests.csv` (source control) and `survey.csv` (optional team survey).
 - The company name, or none.
 
-If they have a Linear, Jira or GitHub export in another shape, map its columns to `references/inputs.md` with a short script of your own and show them the mapping before running. Do not invent values for columns the export does not hold; leave the file out and let the dimension go unread.
+For GitHub pull requests use `scripts/from_github.py` (it drops bots, drafts and self-reviews). For a tracker CSV (Linear, Jira, Shortcut, a spreadsheet) use `scripts/from_csv.py` with one `--map TARGET=SOURCE` per column; `references/inputs.md` has worked mappings. Show the user the printed mapping before the read. Leave unmapped any column the export does not hold: optional columns (cycle, planned, reopened, acceptance_criteria, approvals) can be absent, and their figures are then not computed. Never fill a column with a guess.
 
 ### 2. Read
 
@@ -63,7 +76,7 @@ python3 scripts/read.py --data ../../evals/fixtures/acme --as-of 2026-11-20 --ou
 
 ### 3. Show
 
-Show `run/read.md` as written: the summary table, one section per read dimension, the not-read list and the evidence ledger. Lead with the dimension whose next step matters most to the user, using the read's own words. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
+Show `run/read.md` as written: the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
 
 ### 4. Check
 
@@ -79,6 +92,8 @@ It blocks: a stage for an unread dimension, a stage outside a dimension's bounds
 
 Each rule tests one observable condition from the published rubric and sets a floor (rules out lower stages) or a ceiling (rules out higher stages). A dimension gets one stage only when its floor meets its ceiling. If a floor sits above a ceiling, the read reports conflicting evidence and no stage. Every rule has a minimum sample; below it the rule does not fire. Rules, thresholds and minimums are in `references/rules.md`. They are Dacard v0.1 heuristics, stated as assumptions.
 
+Slowest squads appear as context under a dimension. They never set a bound. The read also says what it is not: it reads how work moves, not whether what shipped worked, and its figures are for choosing where to look, not targets. Keep that framing in anything you write.
+
 Tracker, source-control and survey exports can evidence 6 of the 27 dimensions: Roadmap Discipline, Spec & Context Quality, Delivery Velocity, Quality & Experimentation, Team Orchestration and Process & Iteration. The other 21 need artefacts these exports do not hold. The read says so instead of guessing.
 
 ## Files
@@ -88,4 +103,5 @@ Tracker, source-control and survey exports can evidence 6 of the 27 dimensions: 
 - `scripts/rules.py`: floors, ceilings, next steps and the overall-stage gate.
 - `scripts/framework.py`: the 27 dimensions and stage bands, from Dacard's published framework.
 - `scripts/check_claims.py`: the overclaim checker.
+- `scripts/from_github.py`, `scripts/from_csv.py`: readers that turn exports into the input files.
 - `references/inputs.md`: export formats. `references/rules.md`: every rule and threshold.

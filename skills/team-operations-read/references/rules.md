@@ -25,6 +25,10 @@ A dimension gets one stage only when its floor meets its ceiling. A floor above 
 | Quality & Experimentation | experiments | experiments.csv present | none launched | ceiling 2 | Stage 2: A/B testing talked about, not practised |
 | Quality & Experimentation | review gate | 20 merged pull requests | under 80% merged with an approval | ceiling 3 | Stage 4: quality gates block bad releases |
 
+Both pull request rules hold back when pull_requests.csv names fewer than 3 distinct authors in the window: review data from one or two people is not a team signal.
+
+Slowest squads (median cycle time, median time to first review, squads with 10 or more rows) appear as context only. They never set a bound.
+
 ## What these exports cannot show
 
 No rule sets a floor above 3. Stage 4 and 5 in every dimension describe practices (automated evaluation, living specs, self-improving processes) that tracker and source-control exports do not record. A read can show that a team is at least Stage 3; it cannot show Stage 4.
