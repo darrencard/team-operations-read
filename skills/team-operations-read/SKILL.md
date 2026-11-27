@@ -78,7 +78,7 @@ It writes `run/read.json`, `run/read.md` and `run/read.html`. `--decides` names 
 
 ### 3. Show
 
-Show `run/read.md` as written, and offer `run/read.html` (one self-contained page in the Leader Report style, ready to send): the areas read as scorecard rows, each drawn as a band of levels and never an exact level, with the one to start with marked, the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
+Show `run/read.md` as written, and offer `run/read.html` (one self-contained page in the Leader Report style, ready to send): the areas read as scorecard rows, each drawn exactly as precisely as the data reads it (a band as a band, an exact level as exact), with the one to start with marked, the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
 
 ### 4. Check
 

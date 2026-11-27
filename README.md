@@ -20,7 +20,7 @@ python3 skills/team-operations-read/scripts/read.py --data examples/acme/data --
 
 That writes [examples/acme/team-operations-read.html](examples/acme/team-operations-read.html), one self-contained page in the Leader Report style and the Landing Loop's visual family, with its Markdown twin and JSON. It runs in under a second, and a test checks it reproduces the committed files byte for byte.
 
-What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. The page draws the 6 areas these exports can read as scorecard rows, each a band of levels (filled to the band's floor, the rest of the band dashed), and the 21 they can't see as one line. Team Orchestration reads level 3. Delivery Velocity and Quality & Experimentation read level 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read level 2 or below. No overall level, because that needs all 27 areas. (Illustrative.)
+What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. The page draws the 6 areas these exports can read as scorecard rows, each drawn as precisely as the data reads it (a band filled to its floor with the rest dashed, an exact level filled exactly), and the 21 they can't see as one line. Team Orchestration reads level 3. Delivery Velocity and Quality & Experimentation read level 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read level 2 or below. No overall level, because that needs all 27 areas. (Illustrative.)
 
 ## Install
 

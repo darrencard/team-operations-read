@@ -158,7 +158,7 @@ class Scannable(unittest.TestCase):
 
 
 class Visual(unittest.TestCase):
-    """The areas read as scorecard rows: bands as pips, never an exact level; the unread areas as one line."""
+    """The areas read as scorecard rows: a band as a band, an exact level as exact; the unread areas as one line."""
 
     @classmethod
     def setUpClass(cls):
@@ -183,16 +183,19 @@ class Visual(unittest.TestCase):
         start = next(d for d in self.read if d["id"] == self.doc["start_here"]["dimension"])
         self.assertRegex(frames[0], rf'<span class="sc-n">{re.escape(start["name"])}</span>.*?<span class="sc-w ink">Start here</span>')
 
-    def test_bands_never_exact_levels(self):
+    def test_the_picture_is_exactly_as_precise_as_the_figure(self):
         frame = svgkit.frames_in(self.page)[0]
         lines = re.findall(r'<span class="sc-l"><b>([^<]+)</b></span>', frame)
         self.assertEqual(len(lines), len(self.read))
         for line, d in zip(lines, self.read, strict=True):
-            self.assertRegex(line, r"^(level \d or (above|below)|level \d to \d|mixed evidence)$")
+            self.assertRegex(line, r"^(level \d|level \d or (above|below)|level \d to \d|mixed evidence)$")
             words, filled, dashed = render_html.band(d)
             self.assertEqual(line, words)
+            # Never less or more precise than the data: an exact level prints and draws exactly, a band as a band.
             if d["read"] == "stage":
-                self.assertEqual(line, f"level {d['stage']} or above" if d["stage"] >= 3 else f"level {d['stage']} or below")
+                self.assertEqual((line, filled, dashed), (f"level {d['stage']}", d["stage"], 0))
+            else:
+                self.assertGreater(dashed, 0, d["name"])
         pips = re.findall(r'<svg class="sc-pp".*?</svg>', frame)
         self.assertEqual(len(pips), len(self.read))
         for svg, d in zip(pips, self.read, strict=True):
@@ -201,7 +204,9 @@ class Visual(unittest.TestCase):
             self.assertEqual(svg.count('class="off dash"'), dashed)
         self.assertEqual(render_html.band({"read": "range", "floor": 1, "ceiling": 2}), ("level 2 or below", 1, 1))
         self.assertEqual(render_html.band({"read": "range", "floor": 3, "ceiling": 5}), ("level 3 or above", 3, 2))
-        self.assertEqual(render_html.band({"read": "stage", "stage": 3}), ("level 3 or above", 3, 2))
+        self.assertEqual(render_html.band({"read": "stage", "stage": 3}), ("level 3", 3, 0))
+        orchestration = next(d for d in self.read if d["id"] == "team_orchestration")
+        self.assertEqual(render_html.band(orchestration), ("level 3", 3, 0))
 
     def test_the_visual_states_the_answer(self):
         labels = [html.unescape(x) for x in re.findall(r'role="img" aria-label="([^"]+)"', self.page)]

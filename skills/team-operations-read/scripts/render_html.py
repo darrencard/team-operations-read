@@ -6,8 +6,8 @@ landing-loop). Only a few rules for this page's layout are added.
 
 It reads top down for someone who has never seen the framework: the shared header, where to start as the heading,
 the areas read as scorecard rows (svgkit 1.2.0): one row per area the exports can read, five pips for levels 1 to 5
-filled to the band's floor and dashed where the evidence allows a level but cannot confirm it, the band in words
-("level 2 or below", "level 3 or above", never an exact level), START HERE on the one to start with, and the areas
+filled to the band's floor and dashed where the evidence allows a level but cannot confirm it, the read in words
+("level 2 or below", "level 3 or above", or "level 3" where the data gives an exact level), START HERE on the one to start with, and the areas
 these exports can't see as one muted line. Geist Mono 12px for labels and figures, Geist 14px for names, no text
 inside a picture, no box inside the frame. Then one thing to do next, owned by the person named. The areas read and
 what the exports can't see follow in two columns. Each area in full, the evidence ledger and everything technical
@@ -189,12 +189,15 @@ class Table:
 
 
 def band(d: dict) -> tuple[str, int, int]:
-    """The band the picture draws for an area read, never an exact level: (words, pips filled, pips dashed). Level 3
-    or above fills three and dashes the two it allows; level 2 or below fills the floor and dashes up to 2; any other
-    range fills its floor and dashes to its ceiling; mixed evidence fills none."""
+    """What the picture draws for an area read, exactly as precise as the printed figure: (words, pips filled, pips
+    dashed). An exact level fills that many pips and dashes none ("level 3"). A band fills its floor and dashes the
+    rest of the band: level 3 or above fills three and dashes two; level 2 or below fills the floor and dashes up to
+    2; any other range dashes to its ceiling. Mixed evidence fills none."""
     if d["read"] == "conflict":
         return "mixed evidence", 0, 0
-    lo, hi = (d["stage"], d["stage"]) if d["read"] == "stage" else (d["floor"], d["ceiling"])
+    if d["read"] == "stage":  # the data gives an exact level: draw exactly that, as precise as the printed figure
+        return f"level {d['stage']}", d["stage"], 0
+    lo, hi = d["floor"], d["ceiling"]
     if lo >= 3:
         return f"level {lo} or above", lo, 5 - lo
     if hi <= 2:
