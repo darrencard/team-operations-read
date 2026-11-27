@@ -183,6 +183,20 @@ class Visual(unittest.TestCase):
         start = next(d for d in self.read if d["id"] == self.doc["start_here"]["dimension"])
         self.assertRegex(frames[0], rf'<span class="sc-n">{re.escape(start["name"])}</span>.*?<span class="sc-w ink">Start here</span>')
 
+    def test_each_function_is_a_group_heading_and_start_here_the_only_word(self):
+        frame = svgkit.frames_in(self.page)[0]
+        functions = list(dict.fromkeys(d["function"] for d in self.read))
+        self.assertEqual(re.findall(r'<div class="sc-g">([^<]+)</div>', frame), [html.escape(f) for f in functions])
+        for fn in functions:
+            group = frame.split(f'<div class="sc-g">{html.escape(fn)}</div>', 1)[1].split('<div class="sc-g">', 1)[0]
+            want = [html.escape(d["name"]) for d in self.read if d["function"] == fn]
+            self.assertEqual(re.findall(r'<span class="sc-n">([^<]+)</span>', group), want)
+        words = re.findall(r'<span class="sc-s">(.*?)</span></div>', frame)
+        self.assertEqual([w for w in words if w], ['<span class="sc-w ink">Start here</span>'], "the function is the heading, not the word")
+        css = self.css()
+        self.assertIn(".scg .sc-g{grid-column:1/-1;font-family:var(--mono);font-size:var(--sc-m);", css)
+        self.assertIn(".scg .sc-l{text-transform:uppercase;letter-spacing:.06em}", css)
+
     def test_the_picture_is_exactly_as_precise_as_the_figure(self):
         frame = svgkit.frames_in(self.page)[0]
         lines = re.findall(r'<span class="sc-l"><b>([^<]+)</b></span>', frame)

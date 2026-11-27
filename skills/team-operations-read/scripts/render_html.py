@@ -35,6 +35,8 @@ TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "vendor" / "templ
 STYLE = re.compile(r"<style>(.*?)</style>", re.S)
 
 # Layout for this page only. Everything else comes from the template's stylesheet and svgkit.CSS.
+# In the scorecard, each function is a hairline group heading over its areas (.sc-g, as /update's scorecard groups
+# its rows), and the figure column prints in one case, numerals and capitals, as /update does.
 PAGE_CSS = """
 main.solo{margin-left:0}
 .solo .slide{min-height:0}
@@ -78,6 +80,9 @@ main.solo{margin-left:0}
 .stack table,.stack tbody,.stack tr,.stack td{display:block}.stack tr:first-child{display:none}.stack tr{padding:10px 16px;border-bottom:1px solid var(--line)}
 .stack td{border:0;padding:3px 0;display:grid;grid-template-columns:118px 1fr;gap:12px}.stack td.num{text-align:left;white-space:normal}
 .stack td::before{content:attr(data-l);font:400 11px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
+.scg .sc-l{text-transform:uppercase;letter-spacing:.06em}
+.scg .sc-g{grid-column:1/-1;font-family:var(--mono);font-size:var(--sc-m);line-height:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);padding:18px 0 6px;border-top:1px solid var(--line2)}
+.scg .sc-g+.sc-r{border-top-color:transparent;padding-top:6px}
 """
 
 # The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk
@@ -206,16 +211,18 @@ def band(d: dict) -> tuple[str, int, int]:
 
 
 def area_rows(doc: dict) -> str:
-    """One row per area these exports can read: its name, five pips for levels 1 to 5 (filled to the band's floor, the
+    """One row per area these exports can read, under a hairline heading for its function: its name, five pips for levels 1 to 5 (filled to the band's floor, the
     rest of the band dashed), the band in words, and START HERE on the one to start with. The areas the exports can't
     see are one muted line, never empty rows."""
     start = (doc["start_here"] or {}).get("dimension")
     read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
     rows = []
-    for d in read:
-        words, filled, dashed = band(d)
-        word = sk.check_word("Start here", ink=True) if d["id"] == start else sk.check_word(d["function"])
-        rows.append(sk.sc_row(d["name"], picture=sk.pips(filled, 5, dashed=dashed), figure=sk.figure_line(words), word=word))
+    for fn in dict.fromkeys(d["function"] for d in read):  # each function once, in the order the areas come
+        rows.append(f'<div class="sc-g">{e(fn)}</div>')
+        for d in (d for d in read if d["function"] == fn):
+            words, filled, dashed = band(d)
+            word = sk.check_word("Start here", ink=True) if d["id"] == start else ""
+            rows.append(sk.sc_row(d["name"], picture=sk.pips(filled, 5, dashed=dashed), figure=sk.figure_line(words), word=word))
     unread = len(doc["dimensions"]) - len(read)
     if unread:
         rows.append(sk.sc_note(f"{unread} areas not visible in these exports"))
@@ -223,9 +230,9 @@ def area_rows(doc: dict) -> str:
         rows,
         label=aria(doc),
         title="Areas read",
-        head=["Area", "Levels 1 to 5", "Band", "Start here · function"],
+        head=["Area", "Levels 1 to 5", "Band", "Start here"],
         caption=(
-            f"One row per area these exports can read, {len(read)} of the 27: five pips for levels 1 to 5, filled to the band's floor and "
+            f"One row per area these exports can read, {len(read)} of the 27, under its function: five pips for levels 1 to 5, filled to the band's floor and "
             "dashed where the evidence allows the level but cannot confirm it."
         ),
         illustrative=bool(doc["illustrative"]),
