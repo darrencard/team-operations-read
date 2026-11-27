@@ -32,13 +32,14 @@ from framework import DIMENSIONS, STAGE_NAMES  # noqa: E402
 EM_DASH = chr(0x2014)
 BANNED = ["ai-powered", "unlock", "supercharge", "seamless", "robust", "get started", "revolutionizing", "revolutionising", "disrupting"]
 RANGE_WORDS = re.compile(r"\b(or above|or below|at least|at most|to|between|range|no higher|no lower)\b", re.I)
-STAGE_RE = re.compile(r"\bstage\s+([1-5])\b", re.I)
+STAGE_RE = re.compile(r"\b(?:stage|level)\s+([1-5])\b", re.I)
 STAGE_NAME_RE = re.compile(r"\b(" + "|".join(STAGE_NAMES.values()) + r")\b")
 FIGURE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(%|percent\b|days?\b|hours?\b|h\b|of 5\b|per person\b)", re.I)
 SHORTHAND_RE = re.compile(r"\b(TO|F1|F2|F3)\b")
 COMPARISON_RE = re.compile(r"\b(more than|less than|under|over|above|below|at least|at most|within|between|and|or more)\s*$", re.I)
-# "rubric Stage 3" cites the rubric; "Show Stage 4" names a target. Neither claims a stage.
-CITATION_RE = re.compile(r"\b(rubric|show|to show)\s+stage\s+[1-5]\b", re.I)
+# "rubric Stage 3" or "scoring guide, level 3" cites the rubric; "Show Stage 4" or "To reach level 4" names a target.
+# None of them claims a stage. The page prints stages as levels, so a draft may use either word.
+CITATION_RE = re.compile(r"\b(rubric|show|shows|to show|scoring guide,?|to reach|caps it at)\s+(?:stage|level)\s+[1-5]\b", re.I)
 STATUS_RE = re.compile(r"\b(landed|watch|stalled)\b", re.I)
 OVERALL_RE = re.compile(r"\b(overall|team operations (stage|level|score)|maturity (stage|level)|the team is (at|in) stage)\b", re.I)
 

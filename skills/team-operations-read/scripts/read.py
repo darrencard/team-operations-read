@@ -29,10 +29,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from framework import FUNCTIONS  # noqa: E402
 from inputs import InputError, load  # noqa: E402
 from metrics import compute  # noqa: E402
-from render_html import LIMITS, answer, page, summary  # noqa: E402
+from render_html import LIMITS, UNSEEN, answer, level, page, plain, said, summary  # noqa: E402
 from rules import describe, read_all  # noqa: E402
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 RECHECK_DAYS = 30
 
 
@@ -73,6 +73,7 @@ def build(data_dir: Path, as_of: date, window_days: int, company: str | None, de
 
 
 def render(doc: dict) -> str:
+    """The Markdown twin of the page, in the same plain words: area, level, scoring guide."""
     tag = " (Illustrative)" if doc["illustrative"] else ""
     figs = doc["figures"]
     dims = doc["dimensions"]
@@ -84,58 +85,48 @@ def render(doc: dict) -> str:
         "",
         *[f"- {x}" for x in summary(doc)],
         "",
-        f"Window {doc['window']['start']} to {doc['window']['end']} ({doc['window']['days']} days). "
-        f"{len(read)} of 27 dimensions read from {', '.join(doc['sources']) or 'no exports'}.",
+        f"Team Operations scores how a product team works in 27 areas, each on five levels. Window {doc['window']['start']} to {doc['window']['end']} "
+        f"({doc['window']['days']} days). {len(read)} of 27 areas read from {', '.join(doc['sources']) or 'no exports'}.",
         "",
     ]
     if doc["illustrative"]:
         lines += ["> Illustrative: every figure below comes from invented sample data, not a real company.", ""]
     ov = doc["overall"]
     if ov["claimed"]:
-        lines += [f"**Overall:** Stage {ov['stage']} ({ov['stage_name']}), {ov['total']} of 135.", ""]
+        lines += [f"**Overall:** level {ov['stage']} ({ov['stage_name']}), {ov['total']} of 135.", ""]
     else:
-        lines += [f"**Overall:** no stage claimed. {ov['why']}", ""]
+        lines += [f"**Overall:** no level claimed. An overall level needs a single-level read on all 27 areas. This read has {ov['single_stage_reads']}.", ""]
     sh = doc["start_here"]
     if not sh:
         lines += [
-            "**Start here:** no dimension is bounded yet: the data is below every rule's minimum sample or inside every threshold. "
+            "**What to do next:** no area is bounded yet: the data is below every rule's minimum sample or inside every threshold. "
             "The quickest addition is squads.csv (one row per squad with its roles), then items.csv from your tracker. See references/inputs.md.",
             "",
         ]
     else:
-        lines += [
-            f"**Start here:** {sh['name']}. {cell(sh['next_step'])}",
-            "",
-            _recheck(doc, sh),
-            "",
-        ]
+        lines += [f"**What to do next:** {sh['name']}. {cell(plain(sh['next_step']))}", "", _recheck(doc, sh), ""]
         if doc["decides"]:
             lines += [f"**Decides:** {cell(doc['decides'])}.", ""]
 
-    lines += ["| Dimension | Function | Read | Next step |", "|---|---|---|---|"]
+    lines += ["| Area | Function | Level | Next step |", "|---|---|---|---|"]
     for d in read:
-        lines.append(f"| {d['name']} | {d['function']} | {describe(d)} | {cell(d['next_step'])} |")
+        lines.append(f"| {d['name']} | {d['function']} | {level(d)} | {cell(plain(d['next_step']))} |")
     lines.append("")
 
     for d in read:
-        lines += [f"## {d['name']}: {describe(d)}", "", f"*{d['question']}*", ""]
+        lines += [f"## {d['name']}: {level(d).lower()}", "", f"*{d['question']}*", ""]
         for f in d["findings"]:
             mark = "" if f["bound"] else (" (context, not scored)" if f.get("context") else " (not scored)")
-            lines.append(f"- {cell(f['says'])}{mark} [{f['rule']}]")
+            lines.append(f"- {cell(said(f))}{mark}")
         if d["survey"]:
-            lines.append(f"- {d['survey']['says']}")
+            lines.append(f"- {plain(d['survey']['says'])}")
         if d["survey_disagrees"]:
-            lines.append(f"- {d['survey_disagrees']}")
-        lines += ["", f"**Next step:** {d['next_step']}", ""]
+            lines.append(f"- {plain(d['survey_disagrees'])}")
+        lines += ["", f"**Next step:** {plain(d['next_step'])}", ""]
 
-    lines += [
-        "## How to use this read",
-        "",
-        *[f"- {x}" for x in LIMITS],
-        "",
-    ]
+    lines += ["## How to use this read", "", *[f"- {x}" for x in LIMITS], ""]
 
-    lines += ["## Not read", ""]
+    lines += [f"## {UNSEEN}", ""]
     for fn in FUNCTIONS:
         names = [d for d in dims if d["read"] == "not_read" and d["function"] == fn]
         steps: dict[str, list[dict]] = {}
@@ -143,13 +134,13 @@ def render(doc: dict) -> str:
             steps.setdefault(d["next_step"], []).append(d)
         for step, group in steps.items():
             views = " ".join(f"{d['name']}: {d['survey']['says']}" for d in group if d["survey"] and d["survey"]["shown"])
-            lines.append(f"- **{fn}:** {', '.join(d['name'] for d in group)}. {cell(step)}" + (f" {views}" if views else ""))
+            lines.append(f"- **{fn}:** {', '.join(d['name'] for d in group)}. {cell(plain(step))}" + (f" {views}" if views else ""))
     lines.append("")
 
     lines += [
-        "## Evidence ledger",
+        "## Every figure, with its source",
         "",
-        "Every figure above, with its source. Computed by scripts/metrics.py; nothing is estimated.",
+        "Computed in code from the exports named; nothing is estimated.",
         "",
         "| Figure | Value | Source | Window | As of | Rows | Method |",
         "|---|---|---|---|---|---|---|",
@@ -160,6 +151,17 @@ def render(doc: dict) -> str:
     lines.append("")
     if doc["systems"]:
         lines += ["Where each file came from: " + "; ".join(f"{cell(k)}, {cell(v)}" for k, v in doc["systems"].items()) + ".", ""]
+    lines += [
+        "## For your engineers",
+        "",
+        "Each area's read as read.json stores it, and the rules behind it (references/rules.md). This page prints Stage as level and dimension as area.",
+        "",
+        "| Area | Stored read | Rules |",
+        "|---|---|---|",
+    ]
+    for d in read:
+        lines.append(f"| {d['name']} (`{d['id']}`) | {describe(d)} | {', '.join(cell(f['rule']) for f in d['findings'])} |")
+    lines += ["", "Record key: none. A team read writes nothing into a Landing Loop project file (`landing/<bet>.json`).", ""]
     return "\n".join(lines)
 
 
@@ -189,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
     paths["md"].write_text(render(doc), encoding="utf-8")
     paths["html"].write_text(page(doc), encoding="utf-8")
     n = sum(1 for d in doc["dimensions"] if d["read"] != "not_read")
-    print(f"Read {n} of 27 dimensions. Wrote {paths['html']}, {paths['md']} and {paths['json']}.")
+    print(f"Read {n} of 27 areas. Wrote {paths['html']}, {paths['md']} and {paths['json']}.")
     return 0
 
 

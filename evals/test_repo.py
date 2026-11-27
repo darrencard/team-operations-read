@@ -24,17 +24,17 @@ ALLOWED_BANNED = {"check_claims.py", "test_repo.py", "test_pipeline.py"}
 
 
 class Versions(unittest.TestCase):
-    def test_every_version_field_is_0_3_0(self):
+    def test_every_version_field_is_0_3_1(self):
         plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
         project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
         skill = re.search(r'version: "([^"]+)"', (SKILL / "SKILL.md").read_text(encoding="utf-8")).group(1)
         sample = json.loads((ROOT / "examples/acme/team-operations-read.json").read_text(encoding="utf-8"))["version"]
-        self.assertEqual({plugin["version"], project, skill, VERSION, sample}, {"0.3.0"})
+        self.assertEqual({plugin["version"], project, skill, VERSION, sample}, {"0.3.1"})
         self.assertEqual(plugin["name"], "team-operations-read")
 
     def test_changelog_has_a_dated_entry(self):
         text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual(re.search(r"^## (.+)$", text, re.M).group(1), "0.3.0, 2026-11-26")
+        self.assertEqual(re.search(r"^## (.+)$", text, re.M).group(1), "0.3.1, 2026-11-27")
 
     def test_skill_frontmatter(self):
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
@@ -69,8 +69,17 @@ class Vendored(unittest.TestCase):
     def test_vendored_files_match_their_pins(self):
         pins = json.loads((SKILL / "VENDORED.json").read_text(encoding="utf-8"))
         self.assertEqual(pins["commit"], "366da9bfede540ec19e9164ad5ad17ce28c1d06b")
-        for rel, pin in pins["files"].items():
-            self.assertEqual(hashlib.sha256((SKILL / rel).read_bytes()).hexdigest(), pin["sha256"], rel)
+        svgkit_pin = pins["landing-loop"]
+        self.assertEqual(svgkit_pin["commit"], "5d01756d08ab3eb92b457c3286729791df6bcf5f")
+        files = {**pins["files"], **svgkit_pin["files"]}
+        on_disk = {f"scripts/vendor/{p.name}" for p in (SKILL / "scripts/vendor").iterdir() if p.suffix == ".py"}
+        self.assertEqual(on_disk, {k for k in files if k.startswith("scripts/vendor/")})
+        for rel, pin in files.items():
+            self.assertEqual(hashlib.sha256((SKILL / rel).read_bytes()).hexdigest(), pin["sha256"], f"{rel} changed. Copy it again from its pinned commit.")
+
+    def test_svgkit_is_pinned_byte_identical(self):
+        digest = hashlib.sha256((SKILL / "scripts/vendor/svgkit.py").read_bytes()).hexdigest()
+        self.assertEqual(digest, "8526cf100159a9e5a8958bba4ceb0373a7edc265f481d63795d1731a5999d054")
 
     def test_brief_parser_is_the_canonical_one(self):
         digest = hashlib.sha256((SKILL / "scripts/vendor/landing_brief.py").read_bytes()).hexdigest()

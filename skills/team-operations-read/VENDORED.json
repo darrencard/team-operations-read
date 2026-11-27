@@ -25,5 +25,16 @@
       "from": "skills/product-engineering-update/assets/template.html",
       "sha256": "e5740431ab5269606709d352d3d253325df740830e8316f06478873e71d430d0"
     }
+  },
+  "landing-loop": {
+    "repository": "https://github.com/darrencard/landing-loop",
+    "commit": "5d01756d08ab3eb92b457c3286729791df6bcf5f",
+    "rule": "Copied unchanged from tools/svgkit.py (see tools/SVGKIT.md there). Never edit it here.",
+    "files": {
+      "scripts/vendor/svgkit.py": {
+        "from": "tools/svgkit.py",
+        "sha256": "8526cf100159a9e5a8958bba4ceb0373a7edc265f481d63795d1731a5999d054"
+      }
+    }
   }
 }

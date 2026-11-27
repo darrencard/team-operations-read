@@ -116,7 +116,7 @@ class OptionalColumns(unittest.TestCase):
             dv = next(d for d in doc["dimensions"] if d["id"] == "delivery_velocity")
             self.assertEqual(dv["floor"], 3)
             self.assertEqual(doc["start_here"]["name"], "Delivery Velocity")
-            self.assertIn("Start here", render(doc))
+            self.assertIn("**What to do next:** Delivery Velocity.", render(doc))
 
 
 class GitHubRest(unittest.TestCase):
@@ -276,7 +276,7 @@ class GitHubOnlyFastTeam(unittest.TestCase):
             doc = build(tmp, date.fromisoformat(AS_OF), 90, None)
             self.assertIsNone(doc["start_here"])
             md = render(doc)
-            self.assertIn("no dimension is bounded yet", md)
+            self.assertIn("no area is bounded yet", md)
             self.assertIn("squads.csv", md)
 
 

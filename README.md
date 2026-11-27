@@ -18,9 +18,9 @@ Acme is invented: invoicing software for trades businesses, about 400 people, 12
 python3 skills/team-operations-read/scripts/read.py --data examples/acme/data --as-of 2026-11-20 --out examples/acme --stem team-operations-read
 ```
 
-That writes [examples/acme/team-operations-read.html](examples/acme/team-operations-read.html), one self-contained page in the Leader Report style, with its Markdown twin and JSON. It runs in under a second, and a test checks it reproduces the committed files byte for byte.
+That writes [examples/acme/team-operations-read.html](examples/acme/team-operations-read.html), one self-contained page in the Leader Report style and the Landing Loop's visual family, with its Markdown twin and JSON. It runs in under a second, and a test checks it reproduces the committed files byte for byte.
 
-What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. Team Orchestration reads Stage 3. Delivery Velocity and Quality & Experimentation read Stage 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read Stage 2 or below. No overall stage, because that needs all 27 dimensions. (Illustrative.)
+What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. The page draws all 27 areas of the framework: the 6 these exports can read, shaded by level, and the 21 they can't see, hatched. Team Orchestration reads level 3. Delivery Velocity and Quality & Experimentation read level 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read level 2 or below. No overall level, because that needs all 27 areas. (Illustrative.)
 
 ## Install
 
@@ -74,6 +74,6 @@ Not yet run on a real team's data.
 
 ## Licence
 
-MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.0. Changes are in [CHANGELOG.md](CHANGELOG.md).
+MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.1. Changes are in [CHANGELOG.md](CHANGELOG.md).
 
 Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.

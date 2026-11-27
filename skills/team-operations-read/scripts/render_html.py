@@ -1,20 +1,18 @@
-"""The read as one self-contained HTML page, in the Leader Report style guide.
+"""The read as one self-contained HTML page, on the Leader Report's template and the Landing Loop's one visual family.
 
-The page takes the report's whole stylesheet from its template (assets/vendor/template.html, vendored
-byte-identical at a pinned commit), so it is the same brand family as the deck and the Landing Loop pages.
-Only a few rules for this page's layout are added. It follows the report's references/design.md: mono
-capitals for labels, sans for sentences; hairlines, not boxes; grey for possible stages and ink for the
-read; brass only for a person's call (who decides the start-here step, and the re-check date).
-Selection and focus print in ink: the template paints them green, and green is did-it-land's colour.
+The page takes the report's whole stylesheet from its template (assets/vendor/template.html, vendored byte-identical
+at a pinned commit) and draws its picture with svgkit (scripts/vendor/svgkit.py, vendored byte-identical from
+landing-loop). Only a few rules for this page's layout are added.
 
-A leader gets the point from the top: a one-line answer, five summary lines, the start-here step.
-Everything else folds under one <details>.
+It reads top down for someone who has never seen the framework: the shared header, where to start as the heading,
+the area grid (every one of the 27 areas, the read ones shaded by level, the rest hatched because these exports
+can't see them, the place to start ringed), then one thing to do next, owned by the person named. The areas read
+and what the exports can't see follow in two columns. Each area in full, the evidence ledger and everything
+technical sit in folds. Public copy uses plain words: area, level, scoring guide. The stored JSON keeps its words.
 
-A team read has no bet status, so the page uses no status colour. landed, watch and stalled are a bet's
-words and only did-it-land sets them. This page prints stages, ranges and "not read".
-
-Nothing is loaded from the network, nothing in the output depends on the clock or the machine, and every
-piece of text from an export is escaped.
+A team read has no project status, so the page uses no status colour: landed, watch and stalled belong to
+did-it-land. Brass is only the person who decides the next step. Nothing is loaded from the network, nothing in the
+output depends on the clock or the machine, and every piece of text from an export is escaped.
 """
 
 from __future__ import annotations
@@ -26,56 +24,60 @@ from typing import Any
 
 from framework import DIMENSION_IDS, FUNCTIONS
 from rules import describe
+from vendored import load
+
+sk = load("svgkit")  # vendored unchanged from landing-loop; see VENDORED.json
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "vendor" / "template.html"
 STYLE = re.compile(r"<style>(.*?)</style>", re.S)
 
-# Layout for this page only. Everything else comes from the template's stylesheet.
+# Layout for this page only. Everything else comes from the template's stylesheet and svgkit.CSS.
 PAGE_CSS = """
 main.solo{margin-left:0}
 .solo .slide{min-height:0}
-.solo .slide.cover{padding-top:72px;padding-bottom:40px}
-.solo .lede{margin-bottom:8px}
-.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px 24px}
-.head h2{margin-bottom:12px}
-.rdw{font:400 10px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
-.rdw.none{color:var(--t3)}
-@media (min-width:981px){.sc-h,.sc-r{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 150px}}
-.sb{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:240px}
-.sb i{display:block;font:400 9.5px/16px var(--mono);font-style:normal;text-align:center;color:var(--t3);border:1px solid var(--line);border-radius:2px}
-.sb i.in{border-color:var(--t2);color:var(--t1)}
-.sb i.at{background:var(--t1);border-color:var(--t1);color:var(--bg)}
-.sb.conflict i.in{background:repeating-linear-gradient(135deg,var(--line3) 0 3px,transparent 3px 6px)}
-.rows{margin-top:8px}
-.rows>div{display:grid;grid-template-columns:168px minmax(0,1fr);gap:6px 36px;border-top:1px solid var(--line);padding:14px 0}
-.rows>div>span:first-child{font:400 10px/22px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.rows>div>span:last-child{color:var(--t2);font-size:13.5px}
-.rows .rule{font:400 10px/16px var(--mono);color:var(--t3);margin-left:8px;white-space:nowrap}
-.rows .step{color:var(--t1)}
-.solo .need{margin-top:24px}
-.solo .need-r{margin-top:6px}
-.need-r p{color:var(--t1);font-size:15px}
-.need .who{color:var(--brass);font:400 11.5px/16px var(--mono);white-space:nowrap}
-.need .when{color:var(--brass);font:400 11.5px/16px var(--mono);white-space:nowrap}
-.need .who::before{content:"DECIDES";font-size:10px;letter-spacing:.1em;color:var(--t3);margin-right:6px}
-.need .when::before{content:"RE-CHECK";font-size:10px;letter-spacing:.1em;color:var(--t3);margin-right:6px}
-.nr td:first-child{white-space:nowrap}
-.solo details{margin-top:14px}
-.answer{font-size:22px;line-height:30px;color:var(--t1);max-width:760px;margin:6px 0 14px}
-.five{margin:0;padding-left:18px;color:var(--t2);font-size:14px;line-height:24px;max-width:820px}
-details.more{margin:0}
-details.more>summary{max-width:1120px;margin:0 auto;padding:22px 40px;cursor:pointer;font:400 11px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border-top:1px solid var(--line)}
+.solo .slide.cover{min-height:0;padding-top:40px;padding-bottom:48px;justify-content:flex-start}
+.solo h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.04em;max-width:20ch;margin-bottom:20px}
+.solo .lede{margin-bottom:24px}
+.solo h2{margin-bottom:16px}
+.status{display:inline-block;font:400 10px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border:1px solid var(--line3);border-radius:3px;padding:1px 6px;white-space:nowrap}
+.verdict{margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px}
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--s1);padding:24px 28px 20px}
+@media (min-width:1100px){.panel .sk{display:grid;grid-template-columns:720px minmax(0,1fr);gap:16px 40px;align-items:start}.panel .sk figcaption{margin-top:0;flex-direction:column;align-items:flex-start}}
+.next{margin-top:28px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px 32px;align-items:baseline;border:1px solid var(--brass);border-radius:12px;padding:20px 24px;background:var(--brass-bg)}
+.next>b{font:400 10px/22px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+.next p{margin:0;font-size:16px;line-height:1.5;color:var(--t1)}
+.next .who{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:10px;font:400 11.5px/16px var(--mono);color:var(--brass)}
+.next .who span::before{font-size:10px;letter-spacing:.1em;color:var(--t3);margin-right:8px}
+.next .who .o::before{content:"DECIDES"}.next .who .d::before{content:"RE-CHECK"}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 56px;align-items:start}
+.cols h3{margin-bottom:8px}
+.areas{margin:0;padding:0;list-style:none}
+.areas li{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;align-items:baseline}
+.areas li b{font-weight:500;color:var(--t1);font-size:14.5px}
+.areas li .lv{font:400 10px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
+.areas li p{grid-column:1/-1;margin:0;font-size:13.5px;line-height:1.5;color:var(--t2)}
+.unseen{margin:0;padding:0;list-style:none}
+.unseen li{border-top:1px solid var(--line);padding:10px 0;font-size:13.5px;line-height:1.5;color:var(--t2)}
+.unseen li span{display:block;font:400 10px/18px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.cols>div>p{font-size:13.5px;line-height:1.55;color:var(--t2);margin:0 0 10px}
+.limits{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--t2)}
+.limits li{margin-bottom:8px}
+.solo details{margin-top:4px}
+.solo details>*:not(summary){margin-top:12px}
+.solo details p,.solo details li{margin:0 0 10px;font-size:13px;color:var(--t2);max-width:80ch}
+.solo details ul{padding-left:18px}
+.solo details h3{margin:22px 0 6px}
+.solo details .q{font-style:italic}
+.tablewrap td,.tablewrap th{overflow-wrap:anywhere}
+.tablewrap .ex{font-size:12px;color:var(--t3)}
 ::selection{background:var(--t1);color:var(--bg)}
 :focus-visible{outline:2px solid var(--t1);outline-offset:3px;border-radius:3px}
 .foot{max-width:1120px;margin:0 auto;padding:28px 40px 64px;color:var(--t3);font-size:12px}
-@media (max-width:980px){.rows>div{grid-template-columns:1fr;gap:2px}.foot{padding:24px 16px 48px}details.more>summary{padding:18px 16px}.solo .slide.cover{padding-top:48px}}
+@media (max-width:980px){.foot{padding:24px 16px 48px}.solo .slide.cover{padding-top:24px}.cols,.next{grid-template-columns:1fr}.panel{padding:18px 16px 16px}
+.stack table,.stack tbody,.stack tr,.stack td{display:block}.stack tr:first-child{display:none}.stack tr{padding:10px 16px;border-bottom:1px solid var(--line)}
+.stack td{border:0;padding:3px 0;display:grid;grid-template-columns:118px 1fr;gap:12px}.stack td.num{text-align:left;white-space:normal}
+.stack td::before{content:attr(data-l);font:400 10px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
 """
-
-MARK = (
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">'
-    '<rect x="2" y="13" width="3" height="7" fill="var(--agent)"/><rect x="7" y="10" width="3" height="10" fill="var(--agent)"/>'
-    '<rect x="12" y="2" width="1.5" height="20" fill="var(--brass)"/><rect x="16" y="4" width="4" height="16" fill="var(--t1)"/></svg>'
-)
 
 LIMITS = [
     "It reads how work moves through the team, not whether what shipped worked. Pair it with outcome data before judging the team.",
@@ -84,9 +86,40 @@ LIMITS = [
     "Read a gap with the squad that owns it before acting. The slowest squads are where to ask questions, not who to blame.",
 ]
 
+# The framework's words as the rules write them, and as the page prints them. The stored JSON keeps the rules' words.
+WORDS = (
+    (r"\(rubric Stage (\d)\)", r"(scoring guide, level \1)"),
+    (r"\bShow Stage (\d):", r"To reach level \1:"),
+    (r"\bStage (\d)", r"level \1"),
+    (r"\bstages\b", "levels"),
+    (r"\bstage\b", "level"),
+    (r"\bdimensions\b", "areas"),
+    (r"\bdimension\b", "area"),
+    (r"Book a full Team Operations read to review (.+?) directly\.", r"A full Team Operations read would review \1 directly."),
+    (r"\bspec template\b", "build plan template"),
+    (r"\bautomated evaluation\b", "automated quality tests"),
+)
+UNSEEN = "Can't see from these exports"
+
 
 def e(text: Any) -> str:
     return html.escape(str(text), quote=True)
+
+
+def plain(text: str) -> str:
+    for pattern, to in WORDS:
+        text = re.sub(pattern, to, text)
+    return text
+
+
+def said(f: dict) -> str:
+    """A finding in plain words, with what it does to the level said outright: the scoring guide's citation alone
+    reads as a level reached, when a ceiling cites the level not reached."""
+    text = plain(re.sub(r" \(rubric Stage \d\)", "", f["says"]))
+    if f["bound"]:
+        side, n = f["bound"]
+        text += f" That caps it at level {n}." if side == "ceiling" else f" That shows level {n} at least."
+    return text
 
 
 def stylesheet() -> str:
@@ -98,168 +131,226 @@ def stylesheet() -> str:
     return found.group(1) if found else ""
 
 
-def band(d: dict) -> str:
-    """Five cells, one per stage. Outlined: the stages the evidence leaves open. Filled: the one stage read."""
-    if d["read"] == "not_read":
-        return ""
-    cells = []
+def level(d: dict) -> str:
+    """The one phrase the page uses for an area's level: the read's own bounds, in plain words."""
+    if d["read"] == "stage":
+        return f"Level {d['stage']} ({d['stage_name']})"
+    if d["read"] == "range":
+        if d["ceiling"] == 5:
+            return f"Level {d['floor']} or above"
+        if d["floor"] == 1:
+            return f"Level {d['ceiling']} or below"
+        return f"Level {d['floor']} to {d['ceiling']}"
+    if d["read"] == "conflict":
+        return "Mixed evidence, no level"
+    return UNSEEN
+
+
+def short_level(d: dict) -> str:
+    """The level as the grid prints it, in a box 112 wide."""
+    if d["read"] == "stage":
+        return f"Level {d['stage']}"
+    if d["read"] == "conflict":
+        return "Mixed"
+    return level(d).removeprefix("Level ")
+
+
+def fold(title: str, body: str) -> str:
+    return f"<details><summary>{e(title)}</summary>{body}</details>"
+
+
+class Table:
+    """A table whose cells carry their column name, so a phone shows each row as labelled lines."""
+
+    def __init__(self, heads: tuple[str, ...]) -> None:
+        self.heads = heads
+        self.rows: list[str] = []
+
+    def row(self, *cells: tuple[str, str]) -> None:
+        tds = []
+        for head, (cls, body) in zip(self.heads, cells, strict=True):
+            attr = f' class="{cls}"' if cls else ""
+            tds.append(f'<td{attr} data-l="{e(head)}">{body}</td>')
+        self.rows.append("<tr>" + "".join(tds) + "</tr>")
+
+    def html(self) -> str:
+        head = "<tr>" + "".join(f"<th>{e(h)}</th>" for h in self.heads) + "</tr>"
+        return f'<div class="tablewrap stack"><table>{head}{"".join(self.rows)}</table></div>'
+
+
+# The signature picture: the area grid
+
+
+def wrap(text: str, chars: int) -> list[str]:
+    """Words into lines of at most `chars` characters, so a name fits its box."""
+    lines: list[str] = []
+    for word in text.split():
+        if lines and len(lines[-1]) + 1 + len(word) <= chars:
+            lines[-1] += " " + word
+        else:
+            lines.append(word)
+    return lines
+
+
+def _bar(x: float, y: float, w: float, *, filled: bool) -> str:
+    if filled:
+        return f'<rect x="{sk.num(x)}" y="{sk.num(y)}" width="{sk.num(w)}" height="8" rx="1" fill="{sk.INK}"/>'
+    return (
+        f'<rect x="{sk.num(x + 0.75)}" y="{sk.num(y + 0.75)}" width="{sk.num(w - 1.5)}" height="6.5" rx="1" fill="none" stroke="{sk.INK}" stroke-width="1.5"/>'
+    )
+
+
+def meter(x: float, y: float, d: dict, width: float) -> str:
+    """Five marks for levels 1 to 5. Filled: levels the evidence shows. Outlined: levels it allows but cannot
+    confirm. Faint: levels it rules out."""
+    gap = 3.0
+    w = (width - 4 * gap) / 5
+    parts = []
     for st in range(1, 6):
-        if d["read"] == "stage" and st == d["stage"]:
-            cls = "at"
-        elif d["read"] == "conflict":
-            cls = "in" if st in (d["floor"], d["ceiling"]) else ""
+        mx = x + (st - 1) * (w + gap)
+        if d["read"] == "stage":
+            shown, allowed = st <= d["stage"], False
+        elif d["read"] == "range":
+            shown, allowed = st <= d["floor"], d["floor"] < st <= d["ceiling"]
+        else:  # conflict: the two ends the evidence points at, neither confirmed
+            shown, allowed = False, st in (d["floor"], d["ceiling"])
+        if shown or allowed:
+            parts.append(_bar(mx, y, w, filled=shown))
         else:
-            cls = "in" if d["floor"] <= st <= d["ceiling"] else ""
-        cells.append(f'<i class="{cls}">{st}</i>' if cls else f"<i>{st}</i>")
-    conflict = " conflict" if d["read"] == "conflict" else ""
-    return f'<span class="sb{conflict}" role="img" aria-label="{e(describe(d))}">{"".join(cells)}</span>'
+            parts.append(f'<rect x="{sk.num(mx)}" y="{sk.num(y)}" width="{sk.num(w)}" height="8" rx="1" fill="{sk.LINE}"/>')
+    return "".join(parts)
 
 
-def read_word(d: dict) -> str:
-    none = " none" if d["read"] == "not_read" else ""
-    return f'<span class="rdw{none}">{e(describe(d))}</span>'
-
-
-def evidence_line(d: dict, figs: dict) -> str:
-    """The figure behind the binding bound, in mono, the value in ink."""
-    bound = [f for f in d["findings"] if f["bound"]]
-    if not bound:
-        return ""
-    ceilings = sorted((f for f in bound if f["bound"][0] == "ceiling"), key=lambda f: f["bound"][1])
-    pick = (ceilings or bound)[0]
-    f = figs.get(pick["figures"][0])
-    if not f:
-        return ""
-    return f'<span class="sc-l">{e(f["label"])} <b>{e(f["display"])}</b></span>'
-
-
-def meta(*items: str, illustrative: bool) -> str:
-    spans = "".join(f"<span>{e(x)}</span>" for x in items)
-    if illustrative:
-        spans += '<span class="ill">Illustrative</span>'
-    return f'<div class="meta">{spans}</div>'
-
-
-def scorecard(doc: dict, read: list[dict]) -> str:
-    figs = doc["figures"]
-    rows = []
-    for d in read:
-        rows.append(
-            f'<div class="sc-r"><div class="sc-n"><span><a href="#{e(d["id"])}">{e(d["name"])}</a></span>'
-            f'<span class="sc-d">{e(d["function"])}. {e(d["question"])}</span></div>'
-            f'<div class="sc-v">{band(d)}{evidence_line(d, figs)}</div><div class="sc-s">{read_word(d)}</div></div>'
+def area_tile(x: float, y: float, w: float, h: float, d: dict, chars: int, hid: str, start: bool) -> str:
+    """One area. Read: a shaded box with its name, its level and the meter. Not read: an outline with its name and a
+    hatched strip where the level would be."""
+    read = d["read"] != "not_read"
+    parts = []
+    if read:
+        parts.append(f'<rect x="{sk.num(x)}" y="{sk.num(y)}" width="{sk.num(w)}" height="{sk.num(h)}" rx="4" fill="var(--s2)"/>')
+        parts.append(sk.tile(x, y, w, h, tone=sk.INK))
+    else:
+        parts.append(sk.tile(x, y, w, h, tone=sk.LINE2))
+    for i, line in enumerate(wrap(d["name"], chars)[:2]):
+        parts.append(sk.value(x + 9, y + 19 + i * 15, line, size=12.5, tone=sk.INK if read else sk.MUTED))
+    if read:
+        parts.append(sk.label(x + 9, y + h - 20, short_level(d), tone=sk.INK))
+        parts.append(meter(x + 9, y + h - 14, d, w - 18))
+    else:
+        parts.append(sk.hatched(x + 9, y + h - 15, w - 18, 8, pattern_id=hid, rx=1))
+    if start:
+        parts.append(
+            f'<rect x="{sk.num(x - 5)}" y="{sk.num(y - 5)}" width="{sk.num(w + 10)}" height="{sk.num(h + 10)}" rx="9" fill="none" stroke="{sk.INK}" stroke-width="1.5"/>'
         )
-    head = '<div class="sc-h"><span>Dimension</span><span>Stages the evidence allows</span><span>Read</span></div>'
-    return f'<div class="tablewrap sc">{head}{"".join(rows)}</div>'
+        parts.append(sk.chip(x + w - sk.chip_width("Start here") + 5, y - 14, "Start here", tone=sk.INK, filled=True))
+    return "".join(parts)
 
 
-def start_here(doc: dict) -> str:
+def key(x: float, y: float, hid: str, stacked: bool) -> str:
+    """The key, in the picture's own marks."""
+    items = [
+        (_bar(0, -8, 22, filled=True), "Level shown"),
+        (_bar(0, -8, 22, filled=False), "Level possible"),
+        (sk.hatched(0, -8, 22, 8, pattern_id=hid, rx=1), UNSEEN),
+    ]
+    parts = []
+    cx = x
+    for i, (mark, text) in enumerate(items):
+        dx, dy = (x, y + i * 20.0) if stacked else (cx, y)
+        parts.append(f'<g transform="translate({sk.num(dx)} {sk.num(dy)})">{mark}{sk.label(30, 0, text)}</g>')
+        cx += 30 + sk.label_width(text) + 26
+    return "".join(parts)
+
+
+def area_grid(doc: dict, variant: str) -> str:
+    """Every one of the 27 areas, by function. Wide: one column per function. Tall: each function in turn, two areas
+    to a row."""
+    wide = variant == "wide"
+    hid = f"sk-to-hatch-{variant}"
+    start = (doc["start_here"] or {}).get("dimension")
+    by_fn = {fn: [d for d in doc["dimensions"] if d["function"] == fn] for fn in FUNCTIONS}
+    parts = [sk.defs(sk.hatch_pattern(hid))]
+    th, gap = 74.0, 12.0
+    if wide:
+        width, col, tw, top = sk.WIDE, 120.0, 112.0, 30.0
+        for c, fn in enumerate(FUNCTIONS):
+            x = c * col
+            parts.append(sk.label(x, 12, fn, tone=sk.INK2))
+            for r, d in enumerate(by_fn[fn]):
+                parts.append(area_tile(x, top + r * (th + gap), tw, th, d, 15, hid, d["id"] == start))
+        rows = max(len(v) for v in by_fn.values())
+        y = top + rows * (th + gap) + 14
+        parts.append(key(0, y, hid, stacked=False))
+        height = y + 8
+    else:
+        width, tw = sk.TALL, 164.0
+        y = 12.0
+        for fn in FUNCTIONS:
+            parts.append(sk.label(0, y, fn, tone=sk.INK2))
+            y += 18
+            group = by_fn[fn]
+            for pair in (group[i : i + 2] for i in range(0, len(group), 2)):
+                # A row of areas the exports can't see needs no room for a level, so the phone's grid stays short.
+                lines = max(len(wrap(d["name"], 22)) for d in pair)
+                rh = th if any(d["read"] != "not_read" for d in pair) else 30.0 + 15 * lines
+                for i, d in enumerate(pair):
+                    parts.append(area_tile(0.0 if i == 0 else width - tw, y, tw, rh, d, 22, hid, d["id"] == start))
+                y += rh + gap
+            y += 16
+        parts.append(key(0, y, hid, stacked=True))
+        height = y + 48
+    return sk.frame("".join(parts), label=aria(doc), height=height, width=width, variant=variant)
+
+
+def aria(doc: dict) -> str:
+    """The answer the grid gives, in one sentence."""
+    read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
+    text = f"These exports show {len(read)} of the 27 Team Operations areas and can't see the other {27 - len(read)}"
     sh = doc["start_here"]
-    ill = doc["illustrative"]
     if not sh:
-        return (
-            f'<section class="slide">{meta("Start here", illustrative=ill)}<h2>No dimension is bounded yet</h2>'
-            '<p class="lede">The data is below every rule\'s minimum sample or inside every threshold. The quickest addition is squads.csv '
-            "(one row per squad with its roles), then items.csv from your tracker.</p></section>"
-        )
-    f = doc["figures"].get(sh["recheck_figure"]) if sh["recheck_figure"] else None
+        return text + ", and none is bounded yet, so there is no place to start."
     d = next(x for x in doc["dimensions"] if x["id"] == sh["dimension"])
-    why = next((x["says"] for x in d["findings"] if x["bound"] and x["next_step"] == sh["next_step"]), "")
-    rows = [("Why", why)] if why else []
-    if f:
-        rows.append(("Re-check", f"{f['label']}, now {f['display']}. Run this read again on {doc['recheck_on']} with the same window to see whether it moved."))
-    body = "".join(f"<div><span>{e(k)}</span><span>{e(v)}</span></div>" for k, v in rows)
-    who = f'<span class="who">{e(doc["decides"])}</span>' if doc["decides"] else "<span></span>"
-    need = (
-        f'<div class="need"><b>Start here</b><div class="need-r"><p>{e(sh["next_step"])}</p>{who}<span class="when">{e(doc["recheck_on"])}</span></div></div>'
-    )
-    return (
-        f'<section class="slide">{meta("Start here", illustrative=ill)}<div class="head"><h2>{e(sh["name"])}</h2>{read_word(d)}</div>'
-        f'{need}<div class="rows">{body}</div></section>'
-    )
+    return text + f"; start with {d['name']}, read at {level(d).lower()}."
 
 
-def dimension_section(doc: dict, d: dict) -> str:
-    n = DIMENSION_IDS.index(d["id"]) + 1
-    rows = []
-    for f in d["findings"]:
-        if f["bound"]:
-            label = "Evidence"
-        elif f.get("context"):
-            label = "Context, not scored"
-        else:
-            label = "Not scored"
-        rows.append((label, f'{e(f["says"])}<span class="rule">{e(f["rule"])}</span>'))
-    if d["survey"]:
-        rows.append(("Team view", e(d["survey"]["says"])))
-    if d["survey_disagrees"]:
-        rows.append(("Team view", e(d["survey_disagrees"])))
-    rows.append(("Next step", f'<span class="step">{e(d["next_step"])}</span>'))
-    body = "".join(f"<div><span>{e(k)}</span><span>{v}</span></div>" for k, v in rows)
-    return (
-        f'<section class="slide">{meta(d["function"], f"Dimension {n:02d} of 27", illustrative=doc["illustrative"])}'
-        f'<div class="head"><h2 id="{e(d["id"])}">{e(d["name"])}</h2>{read_word(d)}</div>'
-        f'<p class="lede">{e(d["question"])}</p>{band(d)}<div class="rows">{body}</div></section>'
-    )
+# The words
 
 
-def not_read(doc: dict) -> str:
-    rows = []
-    for fn in FUNCTIONS:
-        group = [d for d in doc["dimensions"] if d["read"] == "not_read" and d["function"] == fn]
-        steps: dict[str, list[dict]] = {}
-        for d in group:
-            steps.setdefault(d["next_step"], []).append(d)
-        for step, ds in steps.items():
-            views = " ".join(f"{d['name']}: {d['survey']['says']}" for d in ds if d["survey"] and d["survey"]["shown"])
-            rows.append(f"<tr><td>{e(fn)}</td><td>{e(', '.join(d['name'] for d in ds))}</td><td>{e(step)}{(' ' + e(views)) if views else ''}</td></tr>")
-    head = "<tr><th>Function</th><th>Dimensions</th><th>What would read them</th></tr>"
-    count = sum(1 for d in doc["dimensions"] if d["read"] == "not_read")
-    return (
-        f'<section class="slide">{meta("Not read", illustrative=doc["illustrative"])}<h2>{count} dimensions these exports cannot read</h2>'
-        f'<div class="tablewrap"><table class="nr"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table></div></section>'
-    )
+def recheck_figure(doc: dict) -> dict | None:
+    sh = doc["start_here"]
+    return doc["figures"].get(sh["recheck_figure"]) if sh and sh["recheck_figure"] else None
 
 
-def ledger(doc: dict) -> str:
-    def row(f: dict) -> str:
-        w = f"{f['window']['from']} to {f['window']['to']}"
-        return (
-            f'<tr><td>{e(f["label"])}</td><td class="num">{e(f["display"])}</td><td>{e(f["source"])}</td>'
-            f'<td class="mo">{e(w)}</td><td class="mo">{e(f["as_of"])}</td><td class="num">{e(f["n"])}</td><td>{e(f["method"])}</td></tr>'
-        )
-
-    head = '<tr><th>Figure</th><th class="num">Value</th><th>Source</th><th>Window</th><th>As of</th><th class="num">Rows</th><th>Method</th></tr>'
-    figs = list(doc["figures"].values())
-    main_rows = [f for f in figs if ".squad." not in f["id"]]
-    squad_rows = [f for f in figs if ".squad." in f["id"]]
-    table = f'<div class="tablewrap"><table><thead>{head}</thead><tbody>{"".join(row(f) for f in main_rows)}</tbody></table></div>'
-    if squad_rows:
-        table += (
-            f"<details><summary>Per-squad figures ({len(squad_rows)}), context only</summary>"
-            f'<div class="tablewrap"><table><thead>{head}</thead><tbody>{"".join(row(f) for f in squad_rows)}</tbody></table></div></details>'
-        )
-    systems = ""
-    if doc["systems"]:
-        systems = (
-            '<p class="asof" style="margin-top:14px">'
-            + e("Where each file came from: " + "; ".join(f"{k}, {v}" for k, v in doc["systems"].items()) + ".")
-            + "</p>"
-        )
-    return (
-        f'<section class="slide">{meta("Evidence ledger", illustrative=doc["illustrative"])}<h2>Every figure, with its source</h2>'
-        f'<p class="lede">Computed by scripts/metrics.py from the exports named. Nothing is estimated.</p>{table}{systems}</section>'
-    )
+def heading(doc: dict) -> str:
+    sh = doc["start_here"]
+    return f"Start with {sh['name']}." if sh else "No area can be read yet."
 
 
 def answer(doc: dict) -> str:
-    """The one line a leader reads first: where to start, and the figure that says why."""
+    """The one line a leader reads first: where to start, and the figure that says why. The Markdown opens with it."""
     sh = doc["start_here"]
     if not sh:
-        return "No dimension is bounded yet. Add squads.csv, then items.csv from your tracker, and run the read again."
-    f = doc["figures"].get(sh["recheck_figure"]) if sh["recheck_figure"] else None
+        return "No area is bounded yet. Add squads.csv, then items.csv from your tracker, and run the read again."
+    f = recheck_figure(doc)
     why = f" {f['label']}: {f['display']}." if f else ""
     return f"Start with {sh['name']}.{why}"
+
+
+def lede(doc: dict) -> str:
+    """The paragraph under the heading, plain text."""
+    read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
+    w = doc["window"]
+    text = (
+        f"Team Operations scores how a product team works in 27 areas, each on five levels. {doc['company']}'s exports for the {w['days']} days "
+        f"to {w['end']} show {len(read)} of them."
+    )
+    sh = doc["start_here"]
+    if not sh:
+        return text + " None is bounded yet: the data is below every rule's minimum sample or inside every threshold."
+    d = next(x for x in doc["dimensions"] if x["id"] == sh["dimension"])
+    f = binding(d)
+    why = f" {said(f)}" if f else f" It reads {level(d).lower()}."
+    return text + f" {sh['name']} asks: {d['question'][:1].lower()}{d['question'][1:]}{why}"
 
 
 def summary(doc: dict) -> list[str]:
@@ -270,56 +361,168 @@ def summary(doc: dict) -> list[str]:
     lower = [d for d in read if d["read"] in ("stage", "range") and (d["stage"] if d["read"] == "stage" else d["ceiling"]) <= 2]
     rest = [d for d in read if d not in higher and d not in lower]
     ov = doc["overall"]
-    overall = f"Overall Stage {ov['stage']} ({ov['stage_name']})." if ov["claimed"] else "No overall stage: that needs all 27."
+    overall = f"Overall level {ov['stage']} ({ov['stage_name']})." if ov["claimed"] else "No overall level: that needs all 27."
 
     def names(ds: list[dict]) -> str:
-        return "; ".join(f"{d['name']} ({'Stage ' + str(d['stage']) if d['read'] == 'stage' else describe(d)})" for d in ds) if ds else "none"
+        return "; ".join(f"{d['name']} at {level(d).lower()}" for d in ds) if ds else "none"
 
     return [
-        f"Read {len(read)} of 27 dimensions from {len(doc['sources'])} exports over {doc['window']['days']} days. {overall}",
-        f"Stage 3 or higher: {names(higher)}.",
-        f"Stage 2 or lower: {names(lower)}.",
+        f"Read {len(read)} of 27 areas from {len(doc['sources'])} exports over {doc['window']['days']} days. {overall}",
+        f"Level 3 or higher: {names(higher)}.",
+        f"Level 2 or lower: {names(lower)}.",
         f"Open or mixed: {names(rest)}.",
-        f"Not read: {len(dims) - len(read)} dimensions these exports do not record. Re-check on {doc['recheck_on']}.",
+        f"{UNSEEN}: {len(dims) - len(read)} areas. Re-check on {doc['recheck_on']}.",
     ]
+
+
+def binding(d: dict) -> dict | None:
+    """The finding behind the area's tightest bound."""
+    bound = [f for f in d["findings"] if f["bound"]]
+    if not bound:
+        return None
+    ceilings = sorted((f for f in bound if f["bound"][0] == "ceiling"), key=lambda f: f["bound"][1])
+    return (ceilings or bound)[0]
+
+
+def areas_read(doc: dict) -> str:
+    items = []
+    for d in (x for x in doc["dimensions"] if x["read"] != "not_read"):
+        f = binding(d)
+        why = f"<p>{e(said(f))}</p>" if f else ""
+        items.append(f'<li><b>{e(d["name"])}</b><span class="lv">{e(level(d))}</span>{why}</li>')
+    return f'<ul class="areas">{"".join(items)}</ul>'
+
+
+def unseen(doc: dict) -> str:
+    items = []
+    for fn in FUNCTIONS:
+        group = [d["name"] for d in doc["dimensions"] if d["read"] == "not_read" and d["function"] == fn]
+        if group:
+            items.append(f"<li><span>{e(fn)}</span>{e(', '.join(group))}</li>")
+    count = sum(1 for d in doc["dimensions"] if d["read"] == "not_read")
+    lead = f"<p>{count} areas live in documents, conversations and decisions that tracker, source-control and survey exports do not record.</p>"
+    return lead + f'<ul class="unseen">{"".join(items)}</ul>'
+
+
+def area_full(d: dict) -> str:
+    rows = []
+    for f in d["findings"]:
+        note = "" if f["bound"] else (" Context, not scored." if f.get("context") else " Not scored.")
+        rows.append(f"<li>{e(said(f))}{e(note)}</li>")
+    if d["survey"]:
+        rows.append(f"<li>{e(plain(d['survey']['says']))}</li>")
+    if d["survey_disagrees"]:
+        rows.append(f"<li>{e(plain(d['survey_disagrees']))}</li>")
+    return (
+        f'<h3 id="{e(d["id"])}">{e(d["name"])}: {e(level(d).lower())}</h3><p class="q">{e(d["question"])}</p>'
+        f"<ul>{''.join(rows)}</ul><p><b>Next step:</b> {e(plain(d['next_step']))}</p>"
+    )
+
+
+def what_would_read(doc: dict) -> str:
+    tab = Table(("Function", "Areas", "What would read them"))
+    for fn in FUNCTIONS:
+        group = [d for d in doc["dimensions"] if d["read"] == "not_read" and d["function"] == fn]
+        steps: dict[str, list[dict]] = {}
+        for d in group:
+            steps.setdefault(d["next_step"], []).append(d)
+        for step, ds in steps.items():
+            views = " ".join(f"{d['name']}: {d['survey']['says']}" for d in ds if d["survey"] and d["survey"]["shown"])
+            tab.row(("", e(fn)), ("", e(", ".join(d["name"] for d in ds))), ("", e(plain(step)) + ((" " + e(views)) if views else "")))
+    return tab.html()
+
+
+def ledger(doc: dict) -> str:
+    def table(figs: list[dict]) -> str:
+        tab = Table(("Figure", "Value", "Source", "Window", "Rows", "Method"))
+        for f in figs:
+            w = f"{f['window']['from']} to {f['window']['to']}"
+            tab.row(("", e(f["label"])), ("num", e(f["display"])), ("ex", e(f["source"])), ("ex", e(w)), ("num", e(f["n"])), ("ex", e(f["method"])))
+        return tab.html()
+
+    figs = list(doc["figures"].values())
+    main_rows = [f for f in figs if ".squad." not in f["id"]]
+    squad_rows = [f for f in figs if ".squad." in f["id"]]
+    body = f"<p>Every figure, computed in code from the exports named, as of {e(doc['as_of'])}. Nothing is estimated.</p>{table(main_rows)}"
+    if squad_rows:
+        body += f"<h3>By squad ({len(squad_rows)} figures), context only</h3>{table(squad_rows)}"
+    if doc["systems"]:
+        body += "<p>" + e("Where each file came from: " + "; ".join(f"{k}, {v}" for k, v in doc["systems"].items()) + ".") + "</p>"
+    return body
+
+
+def engineers(doc: dict) -> str:
+    rows = Table(("Area", "Stored read", "Rules"))
+    for d in doc["dimensions"]:
+        if d["read"] == "not_read":
+            continue
+        rows.row(("", e(d["id"])), ("", e(describe(d))), ("ex", e(", ".join(f["rule"] for f in d["findings"]))))
+    return (
+        "<p>Each area's read as the JSON stores it, with the rules behind it (references/rules.md). The page prints Stage as level and "
+        "dimension as area.</p>"
+        f"{rows.html()}"
+        f"<p>Run: <code>python3 skills/team-operations-read/scripts/read.py --data DIR --as-of {e(doc['as_of'])} --window-days {e(doc['window']['days'])} "
+        "--decides ROLE --out DIR --stem NAME</code>. It writes NAME.json, NAME.md and NAME.html, and exits 2 on bad input with the file, line and "
+        "column named. Exports read: " + e(", ".join(f"{s}.csv" for s in doc["sources"])) + ".</p>"
+        "<p>Before any prose about this read is shown, <code>check_claims.py --read NAME.json --draft draft.md</code> blocks a level the read "
+        "does not support, an overall level it withholds, a figure not in the ledger, and project status words.</p>"
+        "<p>Record key: none. A team read is about the team, not a project, so it writes nothing into a Landing Loop project file "
+        "(<code>landing/&lt;bet&gt;.json</code>) and never opens one.</p>"
+    )
 
 
 def page(doc: dict) -> str:
-    dims = doc["dimensions"]
-    read = [d for d in dims if d["read"] != "not_read"]
-    single = sum(1 for d in read if d["read"] == "stage")
     ill = doc["illustrative"]
-    title = f"Team Operations read: {doc['company']}"
-    ov = doc["overall"]
-    if ov["claimed"]:
-        overall = f"Overall: Stage {ov['stage']} ({ov['stage_name']}), {ov['total']} of 135."
+    sh = doc["start_here"]
+    header = sk.page_header("team-operations-read", date=doc["as_of"], version=f"v{doc['version']}", illustrative=ill)
+    read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
+    pic = sk.figure(
+        area_grid(doc, "wide"),
+        area_grid(doc, "tall"),
+        caption=f"Each box is one of the 27 areas Team Operations scores, under its function. The {len(read)} shaded boxes are the areas these "
+        "exports can read: the five marks are levels 1 to 5, filled where the evidence shows the level and outlined where it allows it but "
+        f"cannot confirm it. The {27 - len(read)} hatched boxes can't be seen from these exports. The ringed box is where to start.",
+        illustrative=ill,
+    )
+    chips = f'<span class="status">{len(read)} of 27 areas read</span>'
+    if sh:
+        d = next(x for x in doc["dimensions"] if x["id"] == sh["dimension"])
+        chips = f'<span class="status">{e(sh["name"])}: {e(level(d).lower())}</span>' + chips
+        who = f'<span class="o">{e(doc["decides"])}</span>' if doc["decides"] else ""
+        f = recheck_figure(doc)
+        again = f" Then run this read again with the same window to see whether it moved from {f['display']}." if f else ""
+        step = (
+            f'<div class="next"><b>What to do next</b><div><p>{e(plain(sh["next_step"]))}{e(again)}</p>'
+            f'<span class="who">{who}<span class="d">{e(doc["recheck_on"])}</span></span></div></div>'
+        )
     else:
-        overall = "No overall stage: that needs a single-stage read on all 27 dimensions."
-    lede = f"{len(read)} of 27 dimensions read from {len(doc['sources'])} exports over {doc['window']['days']} days, {single} to a single stage. {overall}"
-    facts = [
-        (f"{len(read)} of 27", "Dimensions read"),
-        (str(single), "Single stage"),
-        (f"{doc['window']['days']} days", "Window"),
-        (str(len(doc["figures"])), "Figures, each sourced"),
-    ]
-    facts_html = "".join(f"<span><b>{e(v)}</b>{e(k)}</span>" for v, k in facts)
-    cover_meta = meta(f"Read {doc['as_of']}", f"{doc['window']['start']} to {doc['window']['end']}", f"team-operations-read {doc['version']}", illustrative=ill)
+        step = (
+            '<div class="next"><b>What to do next</b><div><p>Add squads.csv (one row per squad with its roles), then items.csv from your tracker, '
+            "and run the read again.</p></div></div>"
+        )
+    cover = (
+        f'<section class="slide cover">{header}<h1>{e(heading(doc))}</h1><p class="lede">{e(lede(doc))}</p>'
+        f'<p class="verdict">{chips}</p><div class="panel">{pic}</div>{step}</section>'
+    )
     limits = "".join(f"<li>{e(x)}</li>" for x in LIMITS)
-    five = "".join(f"<li>{e(x)}</li>" for x in summary(doc))
+    detail = (
+        '<section class="slide"><div class="meta"><span>What the read found</span></div><div class="cols">'
+        f"<div><h3>The {len(read)} areas these exports can read</h3>{areas_read(doc)}</div>"
+        f"<div><h3>{e(UNSEEN)}</h3>{unseen(doc)}"
+        f'<h3 style="margin-top:28px">How to use this read</h3><ul class="limits">{limits}</ul></div>'
+        "</div></section>"
+    )
+    folds = [
+        fold("Each area in full", "".join(area_full(d) for d in sorted(read, key=lambda x: DIMENSION_IDS.index(x["id"])))),
+        fold("What would read the other areas", what_would_read(doc)),
+        fold("Every figure, with its source", ledger(doc)),
+        fold("For your engineers", engineers(doc)),
+    ]
+    more = f'<section class="slide"><div class="meta"><span>Detail</span></div>{"".join(folds)}</section>'
+    title = f"Team Operations read: {doc['company']}"
     return (
         '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        f'<title>{e(title)}</title><style>{stylesheet()}{PAGE_CSS}</style></head><body><main class="solo">'
-        f'<section class="slide cover"><div class="brand">{MARK}<span translate="no">DACARD</span></div>{cover_meta}'
-        f'<h1>{e(title)}</h1><p class="answer">{e(answer(doc))}</p><ul class="five">{five}</ul></section>'
-        f"{start_here(doc)}"
-        '<details class="more"><summary>The full read: scorecard, each dimension, what is not read, and the evidence ledger</summary>'
-        f'<section class="slide">{meta("Coverage", illustrative=ill)}<p class="lede">{e(lede)}</p><div class="facts">{facts_html}</div></section>'
-        f'<section class="slide">{meta("Scorecard", illustrative=ill)}<h2>What the exports can read</h2>{scorecard(doc, read)}</section>'
-        f"{''.join(dimension_section(doc, d) for d in read)}"
-        f"{not_read(doc)}"
-        f'<section class="slide">{meta("How to use this read", illustrative=ill)}<h2>Where to look, not a grade</h2>'
-        f'<div class="card"><ul>{limits}</ul></div></section>'
-        f"{ledger(doc)}</details>"
-        '<p class="foot">Every figure is computed in code from the exports named, and every stage comes from a rule in references/rules.md. '
-        "This read is about the team, not a bet: it writes nothing into a Landing Loop record.</p></main></body></html>\n"
+        f'<title>{e(title)}</title><style>{stylesheet()}{sk.CSS}{PAGE_CSS}</style></head><body><main class="solo">{cover}{detail}{more}'
+        '<p class="foot">Every figure is computed in code from the exports named, and every level comes from a rule in references/rules.md. '
+        "This read is about the team, not a project: it writes nothing into a Landing Loop project file.</p></main></body></html>\n"
     )

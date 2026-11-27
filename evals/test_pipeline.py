@@ -48,7 +48,7 @@ class Acme(unittest.TestCase):
 
     def test_no_overall_stage(self):
         self.assertFalse(self.doc["overall"]["claimed"])
-        self.assertIn("no stage claimed", self.md)
+        self.assertIn("no level claimed", self.md)
 
     def test_every_dimension_has_one_next_step(self):
         for d in self.doc["dimensions"]:
@@ -64,7 +64,7 @@ class Acme(unittest.TestCase):
 
     def test_every_figure_is_marked_illustrative(self):
         self.assertTrue(self.doc["illustrative"])
-        ledger = self.md.split("## Evidence ledger", 1)[1]
+        ledger = self.md.split("## Every figure, with its source", 1)[1].split("## For your engineers", 1)[0]
         rows = [r for r in ledger.splitlines() if r.startswith("| ") and not r.startswith("| Figure")]
         self.assertEqual(len(rows), len(self.doc["figures"]))
         for r in rows:
@@ -122,6 +122,14 @@ class Checker(unittest.TestCase):
     def test_overall_stage_is_blocked(self):
         self.assertTrue(self.errs("Overall, the team is at Stage 3."))
         self.assertTrue(self.errs("Acme is a Scaling stage team."))
+
+    def test_the_plain_word_level_is_checked_like_stage(self):
+        # The page and the Markdown print stages as levels, so a draft in the plain words is held to the same bounds.
+        self.assertEqual(self.errs("Team Orchestration is at level 3. Delivery Velocity is level 3 or above."), [])
+        self.assertTrue(self.errs("Delivery Velocity is level 4."))
+        self.assertTrue(self.errs("Roadmap Discipline is level 3 or above."))
+        self.assertTrue(self.errs("Pricing & Packaging sits at level 2."))
+        self.assertEqual(self.errs("Roadmap Discipline: share of cycle work added after the cycle started is 43%. That caps it at level 2."), [])
 
     def test_unsourced_figure_is_blocked(self):
         self.assertTrue(self.errs("Cycle time fell 40% this quarter."))

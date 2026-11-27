@@ -2,85 +2,85 @@
 
 **Start with Roadmap Discipline. Share of cycle work added after the cycle started: 43%.**
 
-- Read 6 of 27 dimensions from 8 exports over 90 days. No overall stage: that needs all 27.
-- Stage 3 or higher: Delivery Velocity (Stage 3 or above); Quality & Experimentation (Stage 3 or above); Team Orchestration (Stage 3).
-- Stage 2 or lower: Roadmap Discipline (Stage 2 or below); Spec & Context Quality (Stage 2 or below); Process & Iteration (Stage 2 or below).
+- Read 6 of 27 areas from 8 exports over 90 days. No overall level: that needs all 27.
+- Level 3 or higher: Delivery Velocity at level 3 or above; Quality & Experimentation at level 3 or above; Team Orchestration at level 3 (scaling).
+- Level 2 or lower: Roadmap Discipline at level 2 or below; Spec & Context Quality at level 2 or below; Process & Iteration at level 2 or below.
 - Open or mixed: none.
-- Not read: 21 dimensions these exports do not record. Re-check on 2026-12-20.
+- Can't see from these exports: 21 areas. Re-check on 2026-12-20.
 
-Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 dimensions read from cycles, epics, experiments, items, pull_requests, retro_actions, squads, survey.
+Team Operations scores how a product team works in 27 areas, each on five levels. Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 areas read from cycles, epics, experiments, items, pull_requests, retro_actions, squads, survey.
 
 > Illustrative: every figure below comes from invented sample data, not a real company.
 
-**Overall:** no stage claimed. An overall Team Operations stage needs a single-stage read on all 27 dimensions. This read has 1, so no overall stage or level is claimed.
+**Overall:** no level claimed. An overall level needs a single-level read on all 27 areas. This read has 1.
 
-**Start here:** Roadmap Discipline. Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source.
+**What to do next:** Roadmap Discipline. Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source.
 
 **Re-check:** Share of cycle work added after the cycle started, now 43%. Run this read again on 2026-12-20 with the same window to see whether it moved.
 
 **Decides:** Head of Product, Quoting squad.
 
-| Dimension | Function | Read | Next step |
+| Area | Function | Level | Next step |
 |---|---|---|---|
-| Roadmap Discipline | Strategy | Stage 2 or below | Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source. |
-| Spec & Context Quality | Development | Stage 2 or below | Sample 10 reopened items, name the missing context in each, and add the most common gap to the spec template. |
-| Delivery Velocity | Development | Stage 3 or above | Show Stage 4: add automated evaluation to the fast lane so its changes ship on a passing check, not a sprint review. |
-| Quality & Experimentation | Operations | Stage 3 or above | Show Stage 4: add a pre-registered success metric and a stop rule to every experiment. |
-| Team Orchestration | Operations | Stage 3 (Scaling) | Set a same-day first-review norm with a named reviewer rota per squad, and track the median weekly. |
-| Process & Iteration | Operations | Stage 2 or below | Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result. |
+| Roadmap Discipline | Strategy | Level 2 or below | Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source. |
+| Spec & Context Quality | Development | Level 2 or below | Sample 10 reopened items, name the missing context in each, and add the most common gap to the build plan template. |
+| Delivery Velocity | Development | Level 3 or above | To reach level 4: add automated quality tests to the fast lane so its changes ship on a passing check, not a sprint review. |
+| Quality & Experimentation | Operations | Level 3 or above | To reach level 4: add a pre-registered success metric and a stop rule to every experiment. |
+| Team Orchestration | Operations | Level 3 (Scaling) | Set a same-day first-review norm with a named reviewer rota per squad, and track the median weekly. |
+| Process & Iteration | Operations | Level 2 or below | Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result. |
 
-## Roadmap Discipline: Stage 2 or below
+## Roadmap Discipline: level 2 or below
 
 *Is the roadmap shaped by evidence and strategy, or by opinions and requests?*
 
-- Share of cycle work added after the cycle started: 43%. More than 40% of cycle work arrives after planning, which reads as reactive prioritisation (rubric Stage 2). [roadmap_discipline.unplanned]
+- Share of cycle work added after the cycle started: 43%. More than 40% of cycle work arrives after planning, which reads as reactive prioritisation. That caps it at level 2.
 
 **Next step:** Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source.
 
-## Spec & Context Quality: Stage 2 or below
+## Spec & Context Quality: level 2 or below
 
 *Do specs carry enough context for developers to build without guessing?*
 
-- Share of completed items reopened: 18%. More than 15% of finished work comes back, a sign builders are guessing at edge cases (rubric Stage 2). [spec_context_quality.reopens]
+- Share of completed items reopened: 18%. More than 15% of finished work comes back, a sign builders are guessing at edge cases. That caps it at level 2.
 
-**Next step:** Sample 10 reopened items, name the missing context in each, and add the most common gap to the spec template.
+**Next step:** Sample 10 reopened items, name the missing context in each, and add the most common gap to the build plan template.
 
-## Delivery Velocity: Stage 3 or above
+## Delivery Velocity: level 3 or above
 
 *Does the team have differentiated delivery pipelines for different work types?*
 
-- Median cycle time, bug over feature is 0.20: one work type moves through in half the time or less, a proxy for a separate delivery lane (rubric Stage 3). [delivery_velocity.lanes]
-- Slowest squads by median cycle time: Data (7.0 days), Integrations (6.0 days), Invoices (6.0 days). (context, not scored) [cycle_time.by_squad]
+- Median cycle time, bug over feature is 0.20: one work type moves through in half the time or less, a proxy for a separate delivery lane. That shows level 3 at least.
+- Slowest squads by median cycle time: Data (7.0 days), Integrations (6.0 days), Invoices (6.0 days). (context, not scored)
 - Team view (self-reported): 3.2 of 5 from 38 responses.
 
-**Next step:** Show Stage 4: add automated evaluation to the fast lane so its changes ship on a passing check, not a sprint review.
+**Next step:** To reach level 4: add automated quality tests to the fast lane so its changes ship on a passing check, not a sprint review.
 
-## Quality & Experimentation: Stage 3 or above
+## Quality & Experimentation: level 3 or above
 
 *Does the team have experimentation culture and infrastructure?*
 
-- Experiments launched: 4 in the window. Experimentation infrastructure is in use (rubric Stage 3). [quality_experimentation.experiments]
+- Experiments launched: 4 in the window. Experimentation infrastructure is in use. That shows level 3 at least.
 
-**Next step:** Show Stage 4: add a pre-registered success metric and a stop rule to every experiment.
+**Next step:** To reach level 4: add a pre-registered success metric and a stop rule to every experiment.
 
-## Team Orchestration: Stage 3 (Scaling)
+## Team Orchestration: level 3 (scaling)
 
 *Are teams organised for cross-functional collaboration, not silos?*
 
-- Share of squads with product, design and engineering: 83%. Cross-functional squads are the norm (rubric Stage 3). [team_orchestration.squads]
-- Time to first review, median: 30 hours. Work waits more than a day for a second pair of eyes, so collaboration is not yet the default (rubric Stage 4). [team_orchestration.review_wait]
-- Slowest squads by median time to first review: Data (39 hours), Chasing (33 hours), Payments (33 hours). (context, not scored) [review_wait.by_squad]
+- Share of squads with product, design and engineering: 83%. Cross-functional squads are the norm. That shows level 3 at least.
+- Time to first review, median: 30 hours. Work waits more than a day for a second pair of eyes, so collaboration is not yet the default. That caps it at level 3.
+- Slowest squads by median time to first review: Data (39 hours), Chasing (33 hours), Payments (33 hours). (context, not scored)
 - Team view (self-reported): 3.4 of 5 from 38 responses.
 
 **Next step:** Set a same-day first-review norm with a named reviewer rota per squad, and track the median weekly.
 
-## Process & Iteration: Stage 2 or below
+## Process & Iteration: level 2 or below
 
 *Do retros and process reviews actually change how the team works?*
 
-- Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes close (rubric Stage 2). [process_iteration.retro_actions]
+- Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes close. That caps it at level 2.
 - Team view (self-reported): 4.1 of 5 from 38 responses.
-- The team's own view sits more than a stage away from what the exports show. Ask why before acting on either.
+- The team's own view sits more than a level away from what the exports show. Ask why before acting on either.
 
 **Next step:** Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result.
 
@@ -91,18 +91,18 @@ Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 dimensions read from cycles, 
 - The thresholds are Dacard v0.1 heuristics, not industry benchmarks. Treat each bound as a hypothesis to test with the team.
 - Read a gap with the squad that owns it before acting. The slowest squads are where to ask questions, not who to blame.
 
-## Not read
+## Can't see from these exports
 
-- **Strategy:** Market Intelligence, Decision Quality, Competitive Positioning. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the strategy documents, decision records and roadmap history directly.
-- **Design:** Research & Discovery, Prototyping Speed, Experience Design, Design-to-Dev Handoff. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the research repository, prototypes and design system directly. Design-to-Dev Handoff: Team view (self-reported): 2.4 of 5 from 38 responses.
-- **Development:** Architecture & Systems, Build vs. Buy Decisions. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the architecture records and build-or-buy decisions directly.
-- **Intelligence:** Customer Signal Synthesis, Product Analytics, Data Strategy & Flywheel, Feedback Loop Quality. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the analytics setup and customer feedback pipeline directly.
-- **Operations:** Knowledge Management, Unit Economics, Security & Compliance, Reliability & Resilience. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the operating documents, cost reporting and incident records directly. Knowledge Management: Team view (self-reported): 1.9 of 5 from 38 responses.
-- **Go-to-Market:** Positioning & Messaging, Launch Execution, Adoption & Expansion, Pricing & Packaging. Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the positioning, launch plans and pricing records directly.
+- **Strategy:** Market Intelligence, Decision Quality, Competitive Positioning. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the strategy documents, decision records and roadmap history directly.
+- **Design:** Research & Discovery, Prototyping Speed, Experience Design, Design-to-Dev Handoff. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the research repository, prototypes and design system directly. Design-to-Dev Handoff: Team view (self-reported): 2.4 of 5 from 38 responses.
+- **Development:** Architecture & Systems, Build vs. Buy Decisions. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the architecture records and build-or-buy decisions directly.
+- **Intelligence:** Customer Signal Synthesis, Product Analytics, Data Strategy & Flywheel, Feedback Loop Quality. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the analytics setup and customer feedback pipeline directly.
+- **Operations:** Knowledge Management, Unit Economics, Security & Compliance, Reliability & Resilience. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the operating documents, cost reporting and incident records directly. Knowledge Management: Team view (self-reported): 1.9 of 5 from 38 responses.
+- **Go-to-Market:** Positioning & Messaging, Launch Execution, Adoption & Expansion, Pricing & Packaging. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the positioning, launch plans and pricing records directly.
 
-## Evidence ledger
+## Every figure, with its source
 
-Every figure above, with its source. Computed by scripts/metrics.py; nothing is estimated.
+Computed in code from the exports named; nothing is estimated.
 
 | Figure | Value | Source | Window | As of | Rows | Method |
 |---|---|---|---|---|---|---|
@@ -158,3 +158,18 @@ Every figure above, with its source. Computed by scripts/metrics.py; nothing is 
 | Team survey, Team Orchestration, mean score (Illustrative) | 3.4 of 5 | survey.csv | 2026-08-23 to 2026-11-20 | 2026-11-20 | 38 | mean of 1 to 5 responses, self-reported |
 
 Where each file came from: cycles.csv, Illustrative tracker export; epics.csv, Illustrative tracker export; experiments.csv, Illustrative experiment log; items.csv, Illustrative tracker export; pull\_requests.csv, Illustrative GitHub export; retro\_actions.csv, Illustrative retro log; squads.csv, Illustrative team list; survey.csv, Illustrative team survey.
+
+## For your engineers
+
+Each area's read as read.json stores it, and the rules behind it (references/rules.md). This page prints Stage as level and dimension as area.
+
+| Area | Stored read | Rules |
+|---|---|---|
+| Roadmap Discipline (`roadmap_discipline`) | Stage 2 or below | roadmap\_discipline.unplanned |
+| Spec & Context Quality (`spec_context_quality`) | Stage 2 or below | spec\_context\_quality.reopens |
+| Delivery Velocity (`delivery_velocity`) | Stage 3 or above | delivery\_velocity.lanes, cycle\_time.by\_squad |
+| Quality & Experimentation (`quality_experimentation`) | Stage 3 or above | quality\_experimentation.experiments |
+| Team Orchestration (`team_orchestration`) | Stage 3 (Scaling) | team\_orchestration.squads, team\_orchestration.review\_wait, review\_wait.by\_squad |
+| Process & Iteration (`process_iteration`) | Stage 2 or below | process\_iteration.retro\_actions |
+
+Record key: none. A team read writes nothing into a Landing Loop project file (`landing/<bet>.json`).
