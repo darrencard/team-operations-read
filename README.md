@@ -2,6 +2,8 @@
 
 A free Claude skill that scores your team against Dacard's Team Operations framework from GitHub, Linear or CSV exports, and names one step to start with.
 
+A bet is a project you expect to move a number; its bar is the target its landing brief sets.
+
 ```text
 Install the team-operations-read skill from https://github.com/darrencard/team-operations-read: clone it, find a Python 3.11 or later on this machine (macOS python3 is often 3.9), run its tests with it (python -m unittest discover -s evals), and copy skills/team-operations-read into ~/.claude/skills/. Then give me a Team Operations read of my team for the 90 days to today: pull our pull requests and Linear issues with the tools connected to this session (gh or the GitHub connector, the Linear connector), save each export as it stands, convert them with the skill's from_github.py and from_linear.py, and run read.py. Show me the start-here step and the read exactly as the script prints them, with the HTML page, then tell me which file would read more dimensions.
 ```
@@ -74,6 +76,6 @@ Not yet run on a real team's data.
 
 ## Licence
 
-MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.3. Changes are in [CHANGELOG.md](CHANGELOG.md).
+MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.4. Changes are in [CHANGELOG.md](CHANGELOG.md).
 
 Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.

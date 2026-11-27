@@ -4,7 +4,7 @@ description: Scores how a product team works against Dacard's Team Operations fr
 license: MIT. See LICENSE in the repository root.
 metadata:
   author: Dacard
-  version: "0.3.3"
+  version: "0.3.4"
 ---
 
 # Team Operations read
@@ -13,7 +13,7 @@ Reads a folder of exports and scores the dimensions of Dacard's Team Operations 
 
 Everything runs locally. The scripts make no network calls. Do not send the user's data anywhere. Check the interpreter first: `python3 --version` must be 3.11 or later (macOS ships 3.9); use `python3.11` or later if not.
 
-**Outside the Landing Loop's project files.** The loop's skills each write one key of `landing/<bet>.json`. This skill reads the team that runs the projects, not a project, so it writes no key and never opens a project file. Its words are stages ("Stage 3", "Stage 2 or below", "conflicting evidence", "not read"). The page and the Markdown print them in plain words, a stage as a level and a dimension as an area ("level 3", "level 2 or below", "mixed evidence, no level", "can't see from these exports"); `read.json` keeps the framework's words. Write to the user in the plain words too: project, not bet, unless the user says bet, then use their word. Never call a team or a dimension landed, watch or stalled: those are a project's status words, and only did-it-land sets them.
+**Outside the Landing Loop's project files.** The loop's skills each write one key of `landing/<bet>.json`. This skill reads the team that runs the projects, not a project, so it writes no key and never opens a project file. Its words are stages ("Stage 3", "Stage 2 or below", "conflicting evidence", "not read"). The page and the Markdown print them in plain words, a stage as a level and a dimension as an area ("level 3", "level 2 or below", "mixed evidence, no level", "can't see from these exports"); `read.json` keeps the framework's words. Write to the user in the plain words too: project, not the framework's terms. Use the user's word, project or bet; the record key stays `bet`. Never call a team or a dimension landed, watch or stalled: those are a project's status words, and only did-it-land sets them.
 
 ## Quick start: live data first
 

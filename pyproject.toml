@@ -1,6 +1,6 @@
 [project]
 name = "team-operations-read"
-version = "0.3.3"
+version = "0.3.4"
 description = "A Claude skill that scores how a product team works against Dacard's Team Operations framework, from tracker and source-control exports."
 requires-python = ">=3.11"
 # Standard library only, on purpose: the scripts run inside sandboxes that cannot install packages.

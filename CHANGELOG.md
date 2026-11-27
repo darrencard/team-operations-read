@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.4, 2026-11-27
+
+- 12px floor: every label on the page (the header, the next step, who decides and who owns it, status lines, section labels, the figures table, owner names and due dates) renders at 12px or more. The page raises any smaller size in the vendored template and svgkit to 12px as it inlines them (was 11px), 11.5px text included; the vendored files are unchanged. A test checks no font size under 12px in the page CSS.
+- Dates never break: every ISO date in the page's text (headings, intro, figure lines) is held on one line with `white-space: nowrap`, so a narrow screen never splits one at a hyphen. A test checks every date on the sample.
+- Plain words: the README defines a bet once, under its opening line ("A bet is a project you expect to move a number; its bar is the target its landing brief sets."), and SKILL.md tells Claude to use the user's word, project or bet, while the record key stays `bet`. A test checks no other README or SKILL.md prose says bet or bar.
+
 ## 0.3.3, 2026-11-27
 
 - Full column: the heading, the intro, the next step, section text and captions run the full width of the content column, the same width as the scorecard frame (the site's rule since 2026-11-25). The page's own CSS drops its caps on text (the heading's 20ch and the folds' 80ch) and overrides the vendored template's 62ch intro and svgkit's 76ch caption after their rules, so neither hash-pinned file changes. The heading balances its lines; text breaks with `text-wrap: pretty`. A test checks the page CSS caps no text and the sample carries the override.

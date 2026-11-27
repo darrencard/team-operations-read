@@ -90,13 +90,22 @@ main.solo{margin-left:0}
 
 # The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk
 # (both are hash-pinned); the page raises any smaller size to this one as it inlines their rules.
-FONT_FLOOR = 11
+FONT_FLOOR = 12
 FONT_SIZE = re.compile(r"(font-size:\s*|font:[^;{}]*?)(\d+(?:\.\d+)?)px")
 
 
 def floor_fonts(css: str) -> str:
     """Every font size below FONT_FLOOR, raised to it: font-size and the size in a font shorthand."""
     return FONT_SIZE.sub(lambda m: m.group(1) + (str(FONT_FLOOR) if float(m.group(2)) < FONT_FLOOR else m.group(2)) + "px", css)
+
+
+ISO_DATE = re.compile(r"(?<![\w-])\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?Z?)?(?![\w-])")
+
+
+def keep_dates(page: str) -> str:
+    """Every ISO date in the page's text held on one line, so a heading never breaks one at a hyphen at any width."""
+    head, sep, body = page.partition("<body>")
+    return head + sep + re.sub(r">([^<]+)<", lambda m: ">" + ISO_DATE.sub(r'<span class="nw">\g<0></span>', m.group(1)) + "<", body)
 
 
 LIMITS = [
@@ -453,7 +462,7 @@ def page(doc: dict) -> str:
     ]
     more = f'<section class="slide"><div class="meta"><span>Detail</span></div>{"".join(folds)}</section>'
     title = f"Team Operations read: {doc['company']}"
-    return (
+    return keep_dates(
         '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         f'<title>{e(title)}</title><style>{floor_fonts(stylesheet() + sk.CSS + sk.SCORECARD_CSS + PAGE_CSS)}</style></head><body><main class="solo">{cover}{detail}{more}'
         '<p class="foot">Every figure is computed in code from the exports named, and every level comes from a rule in references/rules.md. '

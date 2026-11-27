@@ -267,12 +267,12 @@ class Visual(unittest.TestCase):
         for text in (public, md):
             self.assertEqual(re.findall(r"\b(records?|bets?|the bar|prds?|arr|tokens?)\b", text), [])
 
-    def test_no_text_smaller_than_11px_at_any_width(self):
+    def test_no_text_smaller_than_12px_at_any_width(self):
         css = " ".join(re.findall(r"<style>(.*?)</style>", self.page, re.S) + re.findall(r'style="([^"]*)"', self.page))
         sizes = [float(m) for m in re.findall(r"(?:font-size:\s*|font:[^;{}]*?)(\d+(?:\.\d+)?)px", css)]
         sizes += [float(m) for m in re.findall(r'font-size="(\d+(?:\.\d+)?)"', self.page)]
         self.assertTrue(sizes)
-        self.assertGreaterEqual(min(sizes), 11)
+        self.assertGreaterEqual(min(sizes), 12)
         # The vendored template is untouched on disk: the page raises its small sizes as it inlines them.
         template = ROOT / "skills/team-operations-read/assets/vendor/template.html"
         self.assertIn("font:400 10px/16px", template.read_text(encoding="utf-8"))
