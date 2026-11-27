@@ -277,7 +277,7 @@ def _process_iteration(figs: dict) -> list[dict]:
                 "process_iteration.retro_actions",
                 ["retro_closed_30d"],
                 ("ceiling", 2),
-                f"{ra['label']}: {ra['display']}. Retros surface friction but few fixes land (rubric Stage 2).",
+                f"{ra['label']}: {ra['display']}. Retros surface friction but few fixes close (rubric Stage 2).",
                 "Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result.",
             )
         ]

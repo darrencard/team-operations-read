@@ -1208,7 +1208,7 @@
             "ceiling",
             2
           ],
-          "says": "Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes land (rubric Stage 2).",
+          "says": "Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes close (rubric Stage 2).",
           "next_step": "Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result."
         }
       ],

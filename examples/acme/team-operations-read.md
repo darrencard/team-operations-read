@@ -78,7 +78,7 @@ Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 dimensions read from cycles, 
 
 *Do retros and process reviews actually change how the team works?*
 
-- Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes land (rubric Stage 2). [process_iteration.retro_actions]
+- Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes close (rubric Stage 2). [process_iteration.retro_actions]
 - Team view (self-reported): 4.1 of 5 from 38 responses.
 - The team's own view sits more than a stage away from what the exports show. Ask why before acting on either.
 
