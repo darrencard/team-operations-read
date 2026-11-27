@@ -11,10 +11,11 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from from_csv import convert as map_csv
-from from_github import convert as from_gh
 from helpers import AS_OF, SCRIPTS
 
+from from_csv import convert as map_csv
+from from_github import convert as from_gh
+from from_linear import convert as from_linear
 from read import build, render
 
 PRS = [
@@ -116,6 +117,135 @@ class OptionalColumns(unittest.TestCase):
             self.assertEqual(dv["floor"], 3)
             self.assertEqual(doc["start_here"]["name"], "Delivery Velocity")
             self.assertIn("Start here", render(doc))
+
+
+class GitHubRest(unittest.TestCase):
+    def test_rest_shape_and_paginated_file(self):
+        rest = [
+            {
+                "number": 7,
+                "created_at": "2026-11-02T09:00:00Z",
+                "merged_at": "2026-11-03T09:00:00Z",
+                "draft": False,
+                "user": {"login": "dev-a", "type": "User"},
+                "labels": [],
+                "reviews": [{"user": {"login": "dev-b"}, "state": "APPROVED", "submitted_at": "2026-11-02T10:00:00Z"}],
+            },
+            {"number": 8, "created_at": "2026-11-02T09:00:00Z", "user": {"login": "renovate", "type": "Bot"}},
+        ]
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            # gh api --paginate writes one array per page, back to back.
+            (tmp / "prs.json").write_text(json.dumps(rest[:1]) + json.dumps(rest[1:]), encoding="utf-8")
+            r = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS / "from_github.py"),
+                    "--input",
+                    str(tmp / "prs.json"),
+                    "--out",
+                    str(tmp / "d"),
+                    "--repo",
+                    "acme/app",
+                    "--retrieved-at",
+                    "2026-11-20",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(r.returncode, 0, r.stderr)
+            rows = list(csv.reader((tmp / "d" / "pull_requests.csv").open(encoding="utf-8")))
+            self.assertEqual(rows[1], ["prs#7", "", "2026-11-02T09:00:00Z", "2026-11-02T10:00:00Z", "2026-11-03T09:00:00Z", "1", "dev-a"])
+            self.assertEqual(len(rows), 2)
+            manifest = json.loads((tmp / "d" / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["systems"]["pull_requests.csv"], "GitHub (acme/app), retrieved 2026-11-20")
+
+
+LINEAR_CONNECTOR = {
+    "issues": [
+        {
+            "identifier": "QUO-1",
+            "team": "Quoting",
+            "assignee": "Sam",
+            "labels": ["type:bug"],
+            "createdAt": "2026-10-01T09:00:00Z",
+            "startedAt": "2026-10-02T09:00:00Z",
+            "completedAt": "2026-10-04T09:00:00Z",
+            "cycle": {"number": 12, "startsAt": "2026-09-28", "endsAt": "2026-10-11"},
+            "description": "## Acceptance criteria\n- totals match",
+        },
+        {"identifier": "QUO-2", "team": "Quoting", "labels": [], "createdAt": "2026-10-01", "completedAt": "2026-10-03"},
+    ],
+    "hasNextPage": False,
+}
+LINEAR_GRAPHQL = {
+    "data": {
+        "issues": {
+            "nodes": [
+                {
+                    "identifier": "INV-9",
+                    "team": {"name": "Invoices"},
+                    "assignee": {"name": "Ali"},
+                    "labels": {"nodes": [{"name": "Feature"}]},
+                    "createdAt": "2026-10-05T00:00:00Z",
+                    "startedAt": "2026-10-06T00:00:00Z",
+                    "completedAt": None,
+                    "cycle": {"name": "Sprint 4", "startsAt": "2026-10-05T00:00:00Z", "endsAt": "2026-10-18T00:00:00Z"},
+                }
+            ]
+        }
+    }
+}
+
+
+class Linear(unittest.TestCase):
+    def test_connector_shape(self):
+        lr_issues = LINEAR_CONNECTOR["issues"]
+        header, rows, cycles, counts = from_linear(lr_issues, type_prefix="type:", acceptance_heading="Acceptance criteria")
+        self.assertEqual(header[-1], "acceptance_criteria")
+        self.assertEqual(rows[0], ["QUO-1", "bug", "Quoting", "Sam", "2026-10-01", "2026-10-02", "2026-10-04", "Cycle 12", "true"])
+        # No startedAt: kept and counted, with no completed date, so it adds no cycle time.
+        self.assertEqual(rows[1][5:7], ["", ""])
+        self.assertEqual(counts["no_started"], 1)
+        self.assertEqual(cycles, [["Cycle 12", "2026-09-28", "2026-10-11"]])
+
+    def test_graphql_shape_through_the_cli_loads_into_a_read(self):
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            (tmp / "a.json").write_text(json.dumps(LINEAR_CONNECTOR), encoding="utf-8")
+            (tmp / "b.json").write_text(json.dumps(LINEAR_GRAPHQL), encoding="utf-8")
+            r = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS / "from_linear.py"),
+                    "--issues",
+                    str(tmp / "a.json"),
+                    str(tmp / "b.json"),
+                    "--out",
+                    str(tmp / "d"),
+                    "--type-values",
+                    "bug,feature",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("planned and reopened", r.stdout)
+            rows = list(csv.DictReader((tmp / "d" / "items.csv").open(encoding="utf-8")))
+            self.assertEqual({x["id"]: x["type"] for x in rows}, {"QUO-1": "untyped", "QUO-2": "untyped", "INV-9": "feature"})
+            self.assertEqual(next(x for x in rows if x["id"] == "INV-9")["squad"], "Invoices")
+            doc = build(tmp / "d", date.fromisoformat(AS_OF), 90, None)
+            self.assertEqual(doc["figures"]["cycle_time_median"]["n"], 1)
+            self.assertIn("Linear", doc["systems"]["items.csv"])
+
+    def test_unreadable_file_exits_2(self):
+        with tempfile.TemporaryDirectory() as t:
+            p = Path(t) / "x.json"
+            p.write_text("{}", encoding="utf-8")
+            r = subprocess.run([sys.executable, str(SCRIPTS / "from_linear.py"), "--issues", str(p), "--out", t], capture_output=True, text=True, check=False)
+            self.assertEqual(r.returncode, 2)
 
 
 if __name__ == "__main__":

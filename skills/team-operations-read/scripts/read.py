@@ -1,9 +1,14 @@
 """Run a Team Operations read from a folder of exports.
 
-    python3 scripts/read.py --data DIR --as-of YYYY-MM-DD [--window-days 90] [--company NAME] [--out run]
+    python3 scripts/read.py --data DIR --as-of YYYY-MM-DD [--window-days 90] [--company NAME] [--decides WHO] [--out run] [--stem read]
 
-Writes run/read.json (every figure, finding and bound) and run/read.md (the read to show the user).
+Writes, in --out: <stem>.json (every figure, finding and bound), <stem>.md (the read to show the user) and
+<stem>.html (the same read as one self-contained page in the Leader Report style). Nothing in the output
+depends on the clock or the machine, so the same inputs give the same bytes.
 Exit code 2 on bad input, with the file, line and column named.
+
+The read is about a team, not a bet. It writes no key into any Landing Loop record (landing/<bet>.json)
+and never opens one.
 """
 
 from __future__ import annotations
@@ -19,9 +24,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from framework import FUNCTIONS  # noqa: E402
 from inputs import InputError, load  # noqa: E402
 from metrics import compute  # noqa: E402
+from render_html import LIMITS, page  # noqa: E402
 from rules import describe, read_all  # noqa: E402
 
-VERSION = "0.1.0"
+VERSION = "0.3.0"
 RECHECK_DAYS = 30
 
 
@@ -33,25 +39,28 @@ def cell(text: object) -> str:
     return s
 
 
-def _watch(doc: dict, sh: dict) -> str:
-    f = doc["figures"].get(sh["watch"]) if sh["watch"] else None
+def _recheck(doc: dict, sh: dict) -> str:
+    f = doc["figures"].get(sh["recheck_figure"]) if sh["recheck_figure"] else None
     what = f"{cell(f['label'])}, now {f['display']}" if f else "the figures behind it"
-    return f"**Watch:** {what}. Re-run this read on {doc['recheck_on']} with the same window to see whether it moved."
+    return f"**Re-check:** {what}. Run this read again on {doc['recheck_on']} with the same window to see whether it moved."
 
 
-def build(data_dir: Path, as_of: date, window_days: int, company: str | None) -> dict:
+def build(data_dir: Path, as_of: date, window_days: int, company: str | None, decides: str | None = None) -> dict:
     data, manifest = load(data_dir)
     m = compute(data, as_of, window_days)
     r = read_all(m["figures"])
     illustrative = bool(manifest.get("illustrative"))
+    systems = manifest.get("systems") if isinstance(manifest.get("systems"), dict) else {}
     return {
         "skill": "team-operations-read",
         "version": VERSION,
         "company": company or manifest.get("company") or "the team",
         "illustrative": illustrative,
+        "decides": decides or manifest.get("decides") or None,
         "as_of": as_of.isoformat(),
         "window": m["window"],
         "sources": sorted(k for k in data),
+        "systems": {str(k): str(v) for k, v in sorted(systems.items())},
         "recheck_on": (as_of + timedelta(days=RECHECK_DAYS)).isoformat(),
         "figures": m["figures"],
         **r,
@@ -88,9 +97,11 @@ def render(doc: dict) -> str:
         lines += [
             f"**Start here:** {sh['name']}. {cell(sh['next_step'])}",
             "",
-            _watch(doc, sh),
+            _recheck(doc, sh),
             "",
         ]
+        if doc["decides"]:
+            lines += [f"**Decides:** {cell(doc['decides'])}.", ""]
 
     lines += ["| Dimension | Function | Read | Next step |", "|---|---|---|---|"]
     for d in read:
@@ -111,10 +122,7 @@ def render(doc: dict) -> str:
     lines += [
         "## How to use this read",
         "",
-        "- It reads how work moves through the team, not whether what shipped worked. Pair it with outcome data before judging the team.",
-        "- Do not turn these figures into targets. A team pushed to cut review wait or reopens can hit the number and miss the point. Use them to pick where to look.",
-        "- The thresholds are Dacard v0.1 heuristics, not industry benchmarks. Treat each bound as a hypothesis to test with the team.",
-        "- Read a gap with the squad that owns it before acting. The slowest squads are where to ask questions, not who to blame.",
+        *[f"- {x}" for x in LIMITS],
         "",
     ]
 
@@ -134,12 +142,15 @@ def render(doc: dict) -> str:
         "",
         "Every figure above, with its source. Computed by scripts/metrics.py; nothing is estimated.",
         "",
-        "| Figure | Value | Source | Rows | Method |",
-        "|---|---|---|---|---|",
+        "| Figure | Value | Source | Window | As of | Rows | Method |",
+        "|---|---|---|---|---|---|---|",
     ]
     for f in figs.values():
-        lines.append(f"| {cell(f['label'])}{tag} | {f['display']} | {f['source']} | {f['n']} | {f['method']} |")
+        w = f"{f['window']['from']} to {f['window']['to']}"
+        lines.append(f"| {cell(f['label'])}{tag} | {f['display']} | {f['source']} | {w} | {f['as_of']} | {f['n']} | {f['method']} |")
     lines.append("")
+    if doc["systems"]:
+        lines += ["Where each file came from: " + "; ".join(f"{cell(k)}, {cell(v)}" for k, v in doc["systems"].items()) + ".", ""]
     return "\n".join(lines)
 
 
@@ -149,21 +160,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--as-of", required=True, help="last day of the window, YYYY-MM-DD")
     ap.add_argument("--window-days", type=int, default=90)
     ap.add_argument("--company")
+    ap.add_argument("--decides", help="who decides the start-here step, such as 'VP Product and VP Engineering'")
     ap.add_argument("--out", type=Path, default=Path("run"))
+    ap.add_argument("--stem", default="read", help="file name for the three outputs, without the extension (default: read)")
     a = ap.parse_args(argv)
     try:
         as_of = date.fromisoformat(a.as_of)
         if not 14 <= a.window_days <= 365:
             raise InputError("--window-days must be 14 to 365")
-        doc = build(a.data, as_of, a.window_days, a.company)
+        if not a.stem or "/" in a.stem or "\\" in a.stem or a.stem.startswith("."):
+            raise InputError("--stem must be a plain file name, such as read")
+        doc = build(a.data, as_of, a.window_days, a.company, a.decides)
     except (InputError, ValueError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
     a.out.mkdir(parents=True, exist_ok=True)
-    (a.out / "read.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
-    (a.out / "read.md").write_text(render(doc), encoding="utf-8")
+    paths = {ext: a.out / f"{a.stem}.{ext}" for ext in ("json", "md", "html")}
+    paths["json"].write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    paths["md"].write_text(render(doc), encoding="utf-8")
+    paths["html"].write_text(page(doc), encoding="utf-8")
     n = sum(1 for d in doc["dimensions"] if d["read"] != "not_read")
-    print(f"Read {n} of 27 dimensions. Wrote {a.out / 'read.md'} and {a.out / 'read.json'}.")
+    print(f"Read {n} of 27 dimensions. Wrote {paths['html']}, {paths['md']} and {paths['json']}.")
     return 0
 
 

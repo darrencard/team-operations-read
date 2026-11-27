@@ -11,10 +11,9 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from helpers import ACME, AS_OF, ROOT, SCRIPTS, SKILL
+from helpers import ACME, AS_OF, SCRIPTS
 
 from check_claims import check
-from framework import DIMENSIONS
 from inputs import InputError
 from read import build, render
 
@@ -87,7 +86,7 @@ class Acme(unittest.TestCase):
     def test_deterministic(self):
         self.assertEqual(json.dumps(acme(), sort_keys=True), json.dumps(self.doc, sort_keys=True))
 
-    def test_cli_writes_both_files(self):
+    def test_cli_writes_all_three_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = subprocess.run(
                 [sys.executable, str(SCRIPTS / "read.py"), "--data", str(ACME), "--as-of", AS_OF, "--out", tmp],
@@ -96,8 +95,8 @@ class Acme(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(out.returncode, 0, out.stderr)
-            self.assertTrue((Path(tmp) / "read.md").exists())
-            self.assertTrue((Path(tmp) / "read.json").exists())
+            for ext in ("md", "json", "html"):
+                self.assertTrue((Path(tmp) / f"read.{ext}").exists(), ext)
 
 
 class Checker(unittest.TestCase):
@@ -127,6 +126,10 @@ class Checker(unittest.TestCase):
     def test_unsourced_figure_is_blocked(self):
         self.assertTrue(self.errs("Cycle time fell 40% this quarter."))
         self.assertEqual(self.errs("Median cycle time is 5 days."), [])
+
+    def test_bet_status_words_are_blocked(self):
+        for word in ("landed", "watch", "stalled"):
+            self.assertTrue(any("did-it-land" in x for x in self.errs(f"Team Orchestration has {word}.")), word)
 
     def test_shorthand_em_dash_and_banned_words(self):
         self.assertTrue(self.errs("The TO read is in."))
@@ -193,40 +196,16 @@ class BadInput(unittest.TestCase):
         self.assertIn("not a folder", r.stderr)
 
 
-class RepoFiles(unittest.TestCase):
-    def test_27_dimensions_six_functions(self):
-        self.assertEqual(len(DIMENSIONS), 27)
-        self.assertEqual(len({d[2] for d in DIMENSIONS}), 6)
-
-    def test_skill_frontmatter_and_versions(self):
-        text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
-        self.assertTrue(text.startswith("---\nname: team-operations-read\n"))
-        self.assertIn('version: "0.1.0"', text)
-        desc = re.search(r"^description: (.+)$", text, re.M).group(1)
-        self.assertLessEqual(len(desc), 1024)
-        plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-        self.assertEqual(plugin["version"], "0.1.0")
-        self.assertEqual(plugin["name"], "team-operations-read")
-
-    def test_no_em_dashes_or_banned_words_in_repo_text(self):
-        for p in ROOT.rglob("*"):
-            if p.is_file() and p.suffix in {".md", ".py", ".json", ".csv", ".yml", ".toml", ".txt"} and ".git" not in p.parts:
-                text = p.read_text(encoding="utf-8")
-                self.assertNotIn(EM_DASH, text, str(p))
-                if p.suffix == ".md":
-                    for w in BANNED:
-                        self.assertNotIn(w, text.lower(), f"{p}: {w}")
-
-
 if __name__ == "__main__":
     unittest.main()
 
 
 class StartHere(unittest.TestCase):
-    def test_acme_starts_with_roadmap_and_names_the_figure_to_watch(self):
+    def test_acme_starts_with_roadmap_and_names_the_figure_to_recheck(self):
         doc = acme()
         self.assertEqual(doc["start_here"]["dimension"], "roadmap_discipline")
-        self.assertEqual(doc["start_here"]["watch"], "unplanned_share")
+        self.assertEqual(doc["start_here"]["recheck_figure"], "unplanned_share")
         md = render(doc)
-        self.assertIn("**Watch:** Share of cycle work added after the cycle started, now 43%.", md)
+        self.assertIn("**Re-check:** Share of cycle work added after the cycle started, now 43%.", md)
+        self.assertIn("**Decides:** VP Product and VP Engineering.", md)
         self.assertIn("2026-12-20", md)

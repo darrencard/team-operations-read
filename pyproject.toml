@@ -1,6 +1,6 @@
 [project]
 name = "team-operations-read"
-version = "0.1.0"
+version = "0.3.0"
 description = "A Claude skill that scores how a product team works against Dacard's Team Operations framework, from tracker and source-control exports."
 requires-python = ">=3.11"
 # Standard library only, on purpose: the scripts run inside sandboxes that cannot install packages.
@@ -10,6 +10,8 @@ license = "MIT"
 [tool.ruff]
 line-length = 160
 target-version = "py311"
+# Copied unchanged from the Leader Report at a pinned commit (VENDORED.json); linted there, never edited here.
+extend-exclude = ["skills/team-operations-read/scripts/vendor"]
 
 [tool.ruff.lint]
 # E, F: errors and unused names. I: import order. B: likely bugs. UP: outdated syntax.
@@ -19,7 +21,7 @@ select = ["E", "F", "I", "B", "UP", "SIM", "S"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["framework", "inputs", "metrics", "rules", "read", "check_claims"]
+known-first-party = ["framework", "inputs", "metrics", "rules", "read", "check_claims", "render_html", "vendored", "from_github", "from_linear", "from_csv"]
 
 [tool.ruff.lint.per-file-ignores]
 # The fixture generator draws synthetic rows with random; nothing it makes is a secret or a token.

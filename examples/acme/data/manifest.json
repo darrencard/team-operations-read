@@ -1,0 +1,16 @@
+{
+  "company": "Acme",
+  "illustrative": true,
+  "note": "Invented sample data. Acme is not a real company and no figure here describes one.",
+  "decides": "VP Product and VP Engineering",
+  "systems": {
+    "items.csv": "Illustrative tracker export",
+    "cycles.csv": "Illustrative tracker export",
+    "epics.csv": "Illustrative tracker export",
+    "pull_requests.csv": "Illustrative GitHub export",
+    "squads.csv": "Illustrative team list",
+    "retro_actions.csv": "Illustrative retro log",
+    "experiments.csv": "Illustrative experiment log",
+    "survey.csv": "Illustrative team survey"
+  }
+}

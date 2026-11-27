@@ -1,9 +1,10 @@
 """Write the Acme fixture: invented, illustrative exports for a read.
 
 Acme is a made-up company: invoicing software for trades businesses, Series C, about 400 people,
-12 squads, with an assistant that drafts quotes and chases invoices. Every row is synthetic.
+12 squads, with an assistant that drafts quotes and chases invoices. The Quoting squad is the team
+behind the quote-drafting bet in the Landing Loop's Acme sample. Every row is synthetic.
 
-    python3 evals/make_fixture.py   # rewrites evals/fixtures/acme/
+    python3 evals/make_fixture.py   # rewrites examples/acme/data/
 """
 
 from __future__ import annotations
@@ -14,9 +15,9 @@ import random
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent / "fixtures" / "acme"
+OUT = Path(__file__).resolve().parent.parent / "examples" / "acme" / "data"
 AS_OF = date(2026, 11, 20)
-SQUADS = ["Quotes", "Invoices", "Chasing", "Payments", "Scheduling", "Mobile", "Platform", "Data", "Assistant", "Growth", "Integrations", "Reporting"]
+SQUADS = ["Quoting", "Invoices", "Chasing", "Payments", "Scheduling", "Mobile", "Platform", "Data", "Assistant", "Growth", "Integrations", "Reporting"]
 # Median days in progress per work type. Bugs move far faster than features.
 TYPES = [("feature", 0.40, 10), ("bug", 0.30, 2), ("chore", 0.20, 4), ("improvement", 0.10, 6)]
 
@@ -82,8 +83,10 @@ def main() -> None:
         first = opened + timedelta(hours=wait)
         merged = first + timedelta(hours=rng.randint(1, 48))
         approvals = 0 if rng.random() < 0.08 else rng.randint(1, 2)
-        prs.append([f"PR-{k}", sq, opened.isoformat(), first.isoformat(), merged.isoformat() if merged.date() <= AS_OF else "", approvals])
-    _write("pull_requests.csv", ["id", "squad", "opened", "first_review", "merged", "approvals"], prs)
+        # The author is set from the row number, not drawn, so adding it left every other row unchanged.
+        author = f"{sq.lower()}-eng-{k % 5 + 1}"
+        prs.append([f"PR-{k}", sq, opened.isoformat(), first.isoformat(), merged.isoformat() if merged.date() <= AS_OF else "", approvals, author])
+    _write("pull_requests.csv", ["id", "squad", "opened", "first_review", "merged", "approvals", "author"], prs)
 
     squads = [[sq, "eng" if sq in ("Platform", "Data") else "pm;design;eng"] for sq in SQUADS]
     _write("squads.csv", ["squad", "roles"], squads)
@@ -99,7 +102,7 @@ def main() -> None:
     _write("retro_actions.csv", ["id", "squad", "raised", "closed"], retro)
 
     experiments = [
-        ["EXP-1", "Quotes", "2026-09-10"],
+        ["EXP-1", "Quoting", "2026-09-10"],
         ["EXP-2", "Chasing", "2026-10-01"],
         ["EXP-3", "Growth", "2026-10-22"],
         ["EXP-4", "Assistant", "2026-11-05"],
@@ -118,6 +121,17 @@ def main() -> None:
         "company": "Acme",
         "illustrative": True,
         "note": "Invented sample data. Acme is not a real company and no figure here describes one.",
+        "decides": "VP Product and VP Engineering",
+        "systems": {
+            "items.csv": "Illustrative tracker export",
+            "cycles.csv": "Illustrative tracker export",
+            "epics.csv": "Illustrative tracker export",
+            "pull_requests.csv": "Illustrative GitHub export",
+            "squads.csv": "Illustrative team list",
+            "retro_actions.csv": "Illustrative retro log",
+            "experiments.csv": "Illustrative experiment log",
+            "survey.csv": "Illustrative team survey",
+        },
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 

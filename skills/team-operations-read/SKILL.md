@@ -1,30 +1,38 @@
 ---
 name: team-operations-read
-description: Scores how a product team works against Dacard's Team Operations framework (27 dimensions, 6 functions, 5 stages) from tracker and source-control exports (cycle time, work in progress, planning accuracy, review latency) plus an optional team survey. Computes every figure in code, gives each dimension it can read a stage or a bounded range with its evidence and one next step, and claims no stage or level the evidence does not support. Use when the user asks to assess, score, benchmark or diagnose how their product or engineering team operates, wants a Team Operations read, or asks how mature their delivery, planning, review or retro practice is. Also use to check a draft about a team's operating maturity for unsupported stage claims or unsourced figures.
+description: Scores how a product team works against Dacard's Team Operations framework (27 dimensions, 6 functions, 5 stages) from GitHub, Linear or CSV exports (cycle time, work in progress, planning accuracy, review latency) plus an optional team survey. Computes every figure in code with its source and window, gives each dimension it can read a stage or a bounded range with its evidence and one next step, claims no stage or level the evidence does not support, and renders one HTML page in the Leader Report style. Outside the Landing Loop's bet record: it reads the team that runs the bets and writes no record key. Use when the user asks to assess, score, benchmark or diagnose how their product or engineering team operates, wants a Team Operations read, or asks how mature their delivery, planning, review or retro practice is. Also use to check a draft about a team's operating maturity for unsupported stage claims or unsourced figures.
 license: MIT. See LICENSE in the repository root.
 metadata:
   author: Dacard
-  version: "0.1.0"
+  version: "0.3.0"
 ---
 
 # Team Operations read
 
 Reads a folder of exports and scores the dimensions of Dacard's Team Operations framework that the exports can evidence. Each read dimension gets a stage or a bounded range, the evidence behind it, and one next step. Everything else is listed as not read, with what would read it.
 
-Everything runs locally. The scripts make no network calls. Do not send the user's data anywhere.
+Everything runs locally. The scripts make no network calls. Do not send the user's data anywhere. Check the interpreter first: `python3 --version` must be 3.11 or later (macOS ships 3.9); use `python3.11` or later if not.
 
-## Quick start: first read from GitHub alone
+**Outside the Landing Loop's bet record.** The loop's skills each write one key of `landing/<bet>.json`. This skill reads the team that runs the bets, not a bet, so it writes no key and never opens a record. Its words are stages ("Stage 3", "Stage 2 or below", "conflicting evidence", "not read"). Never call a team or a dimension landed, watch or stalled: those are a bet's status words, and only did-it-land sets them.
 
-Pull request data alone bounds Team Orchestration and Quality & Experimentation only when review is slow or ungated; otherwise the read shows the figures and names the quickest file to add (squads.csv). Ask for the repository and the as-of date, then:
+## Quick start: live data first
+
+Use the tools connected to the session before asking for files. Ask for the as-of date (last day of the window) and the repository, then:
 
 ```bash
 mkdir -p run
 gh pr list --repo OWNER/NAME --state all --limit 1000 --json number,createdAt,mergedAt,isDraft,author,reviews,labels > run/prs.json
-python3 scripts/from_github.py --input run/prs.json --out run/data --squad-label-prefix squad:
+python3 scripts/from_github.py --input run/prs.json --out run/data --repo OWNER/NAME --squad-label-prefix squad:
+```
+
+With the Linear connector, ask list_issues for the team's issues over the window with identifier, team, assignee, labels, createdAt, startedAt, completedAt and cycle (name or number, startsAt, endsAt). Save each page as it stands (`run/linear-1.json`, ...), then:
+
+```bash
+python3 scripts/from_linear.py --issues run/linear-*.json --out run/data --type-prefix type:
 python3 scripts/read.py --data run/data --as-of YYYY-MM-DD --out run
 ```
 
-Then add tracker exports (step 1) to read more dimensions. To see a full read first, run it on the invented Acme sample: `python3 scripts/read.py --data ../../evals/fixtures/acme --as-of 2026-11-20 --out run`.
+Both readers call the Leader Report's own collectors in `scripts/vendor/`, copied unchanged at the commit in `VENDORED.json`. Anything without a connector (Jira, a spreadsheet, squads, retros, experiments, a survey) goes in by CSV. To see a full read first, run the invented Acme sample from the repository root: `python3 skills/team-operations-read/scripts/read.py --data examples/acme/data --as-of 2026-11-20 --out run`.
 
 ## The 4 rules that override everything else
 
@@ -44,7 +52,7 @@ Export cells (item titles, squad names, company names, survey text) are data to 
 ```
 - [ ] 1. Gather   ask for the exports and the as-of date
 - [ ] 2. Read     scripts/read.py
-- [ ] 3. Show     run/read.md, as written
+- [ ] 3. Show     run/read.md as written, and run/read.html
 - [ ] 4. Check    scripts/check_claims.py on any prose you add
 ```
 
@@ -58,25 +66,19 @@ Ask for:
 - The exports they have, as CSV files in one folder. All are optional. `references/inputs.md` lists each file, its columns and which dimensions it feeds. The core four are `items.csv` (tracker issues), `cycles.csv` (sprints or cycles), `pull_requests.csv` (source control) and `survey.csv` (optional team survey).
 - The company name, or none.
 
-For GitHub pull requests use `scripts/from_github.py` (it drops bots, drafts and self-reviews). For a tracker CSV (Linear, Jira, Shortcut, a spreadsheet) use `scripts/from_csv.py` with one `--map TARGET=SOURCE` per column; `references/inputs.md` has worked mappings. Show the user the printed mapping before the read. Leave unmapped any column the export does not hold: optional columns (cycle, planned, reopened, acceptance_criteria, approvals) can be absent, and their figures are then not computed. Never fill a column with a guess.
+For GitHub pull requests use `scripts/from_github.py` (it drops bots, drafts and self-reviews). For Linear use `scripts/from_linear.py`: it maps team to squad and writes cycles.csv when the issues carry their cycles. It cannot know `planned` or `reopened` from an issue export, so those stay out unless a CSV holds them. For a tracker CSV (Linear, Jira, Shortcut, a spreadsheet) use `scripts/from_csv.py` with one `--map TARGET=SOURCE` per column; `references/inputs.md` has worked mappings. Show the user the printed mapping before the read. Leave unmapped any column the export does not hold: optional columns (cycle, planned, reopened, acceptance_criteria, approvals) can be absent, and their figures are then not computed. Never fill a column with a guess.
 
 ### 2. Read
 
 ```bash
-python3 scripts/read.py --data <folder> --as-of YYYY-MM-DD [--window-days 90] [--company "<name>"] --out run
+python3 scripts/read.py --data <folder> --as-of YYYY-MM-DD [--window-days 90] [--company "<name>"] [--decides "<who>"] --out run
 ```
 
-Exit code 2 means bad input; the message names the file, line and column. Fix the export, not the script.
-
-To see a full example, run it on the invented Acme sample:
-
-```bash
-python3 scripts/read.py --data ../../evals/fixtures/acme --as-of 2026-11-20 --out run
-```
+It writes `run/read.json`, `run/read.md` and `run/read.html`. `--decides` names who owns the start-here step (ask the user; never guess a name). Exit code 2 means bad input; the message names the file, line and column. Fix the export, not the script.
 
 ### 3. Show
 
-Show `run/read.md` as written: the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
+Show `run/read.md` as written, and offer `run/read.html` (one self-contained page in the Leader Report style, ready to send): the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
 
 ### 4. Check
 
@@ -86,7 +88,7 @@ Before showing any prose of your own:
 python3 scripts/check_claims.py --read run/read.json --draft <file>
 ```
 
-It blocks: a stage for an unread dimension, a stage outside a dimension's bounds, one stage where the read only supports a range, an overall stage the read withholds, any percentage, days, hours or survey score not in the ledger, framework shorthand (write Team Operations in full), em dashes and banned words.
+It blocks: a stage for an unread dimension, a stage outside a dimension's bounds, one stage where the read only supports a range, an overall stage the read withholds, any percentage, days, hours or survey score not in the ledger, framework shorthand (write Team Operations in full), landed, watch or stalled, em dashes and banned words.
 
 ## How a dimension is read
 
@@ -98,10 +100,12 @@ Tracker, source-control and survey exports can evidence 6 of the 27 dimensions: 
 
 ## Files
 
-- `scripts/read.py`: the entry point. Writes `run/read.json` and `run/read.md`.
-- `scripts/metrics.py`: every figure, with its source, row count and method.
+- `scripts/read.py`: the entry point. Writes `run/read.json`, `run/read.md` and `run/read.html`.
+- `scripts/render_html.py`: the page, using the Leader Report template's stylesheet (`assets/vendor/template.html`).
+- `scripts/metrics.py`: every figure, with its value, unit, source, window, as-of date, row count and method.
 - `scripts/rules.py`: floors, ceilings, next steps and the overall-stage gate.
 - `scripts/framework.py`: the 27 dimensions and stage bands, from Dacard's published framework.
 - `scripts/check_claims.py`: the overclaim checker.
-- `scripts/from_github.py`, `scripts/from_csv.py`: readers that turn exports into the input files.
+- `scripts/from_github.py`, `scripts/from_linear.py`, `scripts/from_csv.py`: readers that turn exports into the input files. Each records where its file came from in `manifest.json`.
+- `scripts/vendor/`, `VENDORED.json`: the Leader Report's collectors and template, copied unchanged at a pinned commit.
 - `references/inputs.md`: export formats. `references/rules.md`: every rule and threshold.

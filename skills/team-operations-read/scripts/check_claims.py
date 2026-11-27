@@ -8,6 +8,8 @@ Errors (exit 1):
   - an overall Team Operations stage or level when the read withholds one
   - a figure (a percentage, days, hours or a score of 5) that is not in the evidence ledger
   - shorthand for the framework (TO, F1, F2, F3), em dashes, or banned words
+  - landed, watch or stalled: those are a bet's status words, and only did-it-land sets them. A team read
+    speaks in stages
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ SHORTHAND_RE = re.compile(r"\b(TO|F1|F2|F3)\b")
 COMPARISON_RE = re.compile(r"\b(more than|less than|under|over|above|below|at least|at most|within|between|and|or more)\s*$", re.I)
 # "rubric Stage 3" cites the rubric; "Show Stage 4" names a target. Neither claims a stage.
 CITATION_RE = re.compile(r"\b(rubric|show|to show)\s+stage\s+[1-5]\b", re.I)
+STATUS_RE = re.compile(r"\b(landed|watch|stalled)\b", re.I)
 OVERALL_RE = re.compile(r"\b(overall|team operations (stage|level|score)|maturity (stage|level)|the team is (at|in) stage)\b", re.I)
 
 
@@ -75,6 +78,8 @@ def check(read: dict, draft: str) -> list[str]:
     for w in BANNED:
         if w in low:
             errors.append(f"Banned word: {w!r}.")
+    for m in STATUS_RE.finditer(draft):
+        errors.append(f"Status word {m.group(1)!r}: landed, watch and stalled are a bet's status, set only by did-it-land. Describe the team in stages.")
     for m in SHORTHAND_RE.finditer(draft):
         errors.append(f"Shorthand {m.group(1)!r}: write the framework's full name, Team Operations.")
 

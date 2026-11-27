@@ -12,7 +12,7 @@ One folder of CSV files with a header row. Every file is optional. Dates are `YY
 | `retro_actions.csv` | id, squad, raised, closed | Process & Iteration |
 | `experiments.csv` | id, squad, launched | Quality & Experimentation |
 | `survey.csv` | respondent, dimension, score | Team view beside any dimension; never a read on its own |
-| `manifest.json` | `{"company": "...", "illustrative": true}` | Labels. `illustrative` marks every figure Illustrative. |
+| `manifest.json` | `{"company": "...", "illustrative": true, "decides": "...", "systems": {"items.csv": "Linear, retrieved 2026-11-20"}}` | Labels. `illustrative` marks every figure Illustrative. `decides` names who owns the start-here step. `systems` says where each file came from; the readers write it. |
 
 ## Column notes
 
@@ -26,12 +26,16 @@ Optional columns: `cycle`, `planned`, `reopened` and `acceptance_criteria` in it
 
 ## Readers
 
-**GitHub.** `scripts/from_github.py` reads `gh pr list --json number,createdAt,mergedAt,isDraft,author,reviews,labels` output and writes pull_requests.csv. It drops bot authors and drafts, ignores self-reviews, and counts an approval only when a reviewer's latest review is APPROVED. Squad comes from `--squad` or a label prefix such as `squad:`. Repeat `--input` for several repositories.
+Live data first. Both live readers call the Leader Report's own collectors (`scripts/vendor/`, vendored unchanged at the commit in `VENDORED.json`) to read the export as the tool returns it, then add only what a Team Operations read needs.
+
+**GitHub.** `scripts/from_github.py` reads `gh pr list --json number,createdAt,mergedAt,isDraft,author,reviews,labels` output, or the REST shape from `gh api --paginate`, and writes pull_requests.csv. It drops bot authors and drafts, ignores self-reviews, and counts an approval only when a reviewer's latest review is APPROVED. Squad comes from `--squad` or a label prefix such as `squad:`. Repeat `--input` for several repositories.
+
+**Linear.** `scripts/from_linear.py --issues page1.json ...` reads the Linear connector's list_issues pages or GraphQL responses and writes items.csv, plus cycles.csv when issues carry `cycle` with `startsAt` and `endsAt`. Squad is the team (or `--squad-label-prefix`), type comes from `--type-prefix` or `--type-values`, and `--acceptance-heading` marks items whose description holds that heading. `planned` and `reopened` need Linear's issue history, so this reader leaves them out.
 
 **Any tracker CSV.** `scripts/from_csv.py --target items` maps columns by name. Check the header of your own export first; column names change between tools and versions. Example mappings (assumptions to check against your file):
 
 ```bash
-# Linear issues export
+# Linear issues CSV export (when there is no connector)
 python3 scripts/from_csv.py --input linear.csv --target items --out run/data \
   --map id=ID --map squad=Team --map assignee=Assignee --map created=Created \
   --map started=Started --map completed=Completed --map type=Labels --map cycle="Cycle Name" \

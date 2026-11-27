@@ -10,7 +10,7 @@ EPIC-8,Assistant,false
 EPIC-9,Growth,false
 EPIC-10,Integrations,true
 EPIC-11,Reporting,true
-EPIC-12,Quotes,true
+EPIC-12,Quoting,true
 EPIC-13,Invoices,false
 EPIC-14,Chasing,false
 EPIC-15,Payments,true
@@ -22,7 +22,7 @@ EPIC-20,Assistant,true
 EPIC-21,Growth,true
 EPIC-22,Integrations,true
 EPIC-23,Reporting,false
-EPIC-24,Quotes,false
+EPIC-24,Quoting,false
 EPIC-25,Invoices,true
 EPIC-26,Chasing,true
 EPIC-27,Payments,true

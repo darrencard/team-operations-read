@@ -432,10 +432,10 @@ def start_here(dims: list[dict]) -> dict | None:
         return None
     rank = {"conflict": 0}
     pick = min(read, key=lambda d: (rank.get(d["read"], 1), d["ceiling"], d["floor"]))
-    # The figure to watch: the first figure behind the bound that set the next step.
+    # The figure to re-check: the first figure behind the bound that set the next step.
     source = next((f for f in pick["findings"] if f["bound"] and f["next_step"] == pick["next_step"]), None)
-    watch = source["figures"][0] if source and source["figures"] else None
-    return {"dimension": pick["id"], "name": pick["name"], "next_step": pick["next_step"], "watch": watch}
+    recheck = source["figures"][0] if source and source["figures"] else None
+    return {"dimension": pick["id"], "name": pick["name"], "next_step": pick["next_step"], "recheck_figure": recheck}
 
 
 def describe(d: dict) -> str:

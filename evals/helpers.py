@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "skills" / "team-operations-read"
 SCRIPTS = SKILL / "scripts"
-ACME = ROOT / "evals" / "fixtures" / "acme"
+ACME = ROOT / "examples" / "acme" / "data"
 AS_OF = "2026-11-20"
 
 if str(SCRIPTS) not in sys.path:

@@ -149,3 +149,15 @@ def load(data_dir: Path) -> tuple[dict, dict]:
         raise InputError("manifest.json: expected an object")
     _check(data)
     return data, manifest
+
+
+def note_system(data_dir: Path, filename: str, system: str) -> None:
+    """Record where a file came from in manifest.json, so every figure built from it can say so."""
+    path = data_dir / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    if not isinstance(manifest, dict):
+        raise InputError("manifest.json: expected an object")
+    systems = manifest.get("systems") if isinstance(manifest.get("systems"), dict) else {}
+    systems[filename] = system
+    manifest["systems"] = dict(sorted(systems.items()))
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

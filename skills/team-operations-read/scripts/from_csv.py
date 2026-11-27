@@ -19,7 +19,7 @@ import csv
 import sys
 from pathlib import Path
 
-from inputs import SPECS
+from inputs import SPECS, note_system
 
 
 def _type(cell: str, values: list[str]) -> str:
@@ -85,6 +85,7 @@ def main(argv: list[str] | None = None) -> int:
         w = csv.writer(fh)
         w.writerow(header)
         w.writerows(out)
+    note_system(a.out, SPECS[a.target].filename, f"CSV export {a.input.name}")
     for col in header:
         print(f"  {col} <- {mapping[col]}")
     print(f"Wrote {len(out)} rows to {path}.")

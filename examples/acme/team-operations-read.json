@@ -1,0 +1,1341 @@
+{
+  "skill": "team-operations-read",
+  "version": "0.3.0",
+  "company": "Acme",
+  "illustrative": true,
+  "decides": "VP Product and VP Engineering",
+  "as_of": "2026-11-20",
+  "window": {
+    "start": "2026-08-23",
+    "end": "2026-11-20",
+    "days": 90
+  },
+  "sources": [
+    "cycles",
+    "epics",
+    "experiments",
+    "items",
+    "pull_requests",
+    "retro_actions",
+    "squads",
+    "survey"
+  ],
+  "systems": {
+    "cycles.csv": "Illustrative tracker export",
+    "epics.csv": "Illustrative tracker export",
+    "experiments.csv": "Illustrative experiment log",
+    "items.csv": "Illustrative tracker export",
+    "pull_requests.csv": "Illustrative GitHub export",
+    "retro_actions.csv": "Illustrative retro log",
+    "squads.csv": "Illustrative team list",
+    "survey.csv": "Illustrative team survey"
+  },
+  "recheck_on": "2026-12-20",
+  "figures": {
+    "cycle_time_median": {
+      "id": "cycle_time_median",
+      "label": "Cycle time, median",
+      "value": 5.0,
+      "unit": "days",
+      "display": "5.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 568,
+      "method": "completed minus started, items completed in the window"
+    },
+    "cycle_time_p85": {
+      "id": "cycle_time_p85",
+      "label": "Cycle time, 85th percentile",
+      "value": 11,
+      "unit": "days",
+      "display": "11.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 568,
+      "method": "nearest rank, items completed in the window"
+    },
+    "cycle_time_median.bug": {
+      "id": "cycle_time_median.bug",
+      "label": "Cycle time, median, bug",
+      "value": 2,
+      "unit": "days",
+      "display": "2.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 169,
+      "method": "completed minus started, bug items"
+    },
+    "cycle_time_median.chore": {
+      "id": "cycle_time_median.chore",
+      "label": "Cycle time, median, chore",
+      "value": 4,
+      "unit": "days",
+      "display": "4.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 119,
+      "method": "completed minus started, chore items"
+    },
+    "cycle_time_median.feature": {
+      "id": "cycle_time_median.feature",
+      "label": "Cycle time, median, feature",
+      "value": 10,
+      "unit": "days",
+      "display": "10.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 225,
+      "method": "completed minus started, feature items"
+    },
+    "cycle_time_median.improvement": {
+      "id": "cycle_time_median.improvement",
+      "label": "Cycle time, median, improvement",
+      "value": 6,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 55,
+      "method": "completed minus started, improvement items"
+    },
+    "lane_ratio": {
+      "id": "lane_ratio",
+      "label": "Median cycle time, bug over feature",
+      "value": 0.2,
+      "unit": "ratio",
+      "display": "0.20",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 394,
+      "method": "fastest over slowest work-type median, types with 10 or more completed items"
+    },
+    "cycle_time.squad.Assistant": {
+      "id": "cycle_time.squad.Assistant",
+      "label": "Cycle time, median, Assistant",
+      "value": 4,
+      "unit": "days",
+      "display": "4.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 47,
+      "method": "median for squad Assistant"
+    },
+    "cycle_time.squad.Chasing": {
+      "id": "cycle_time.squad.Chasing",
+      "label": "Cycle time, median, Chasing",
+      "value": 5.0,
+      "unit": "days",
+      "display": "5.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Chasing"
+    },
+    "cycle_time.squad.Data": {
+      "id": "cycle_time.squad.Data",
+      "label": "Cycle time, median, Data",
+      "value": 7,
+      "unit": "days",
+      "display": "7.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 47,
+      "method": "median for squad Data"
+    },
+    "cycle_time.squad.Growth": {
+      "id": "cycle_time.squad.Growth",
+      "label": "Cycle time, median, Growth",
+      "value": 5,
+      "unit": "days",
+      "display": "5.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 47,
+      "method": "median for squad Growth"
+    },
+    "cycle_time.squad.Integrations": {
+      "id": "cycle_time.squad.Integrations",
+      "label": "Cycle time, median, Integrations",
+      "value": 6.0,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Integrations"
+    },
+    "cycle_time.squad.Invoices": {
+      "id": "cycle_time.squad.Invoices",
+      "label": "Cycle time, median, Invoices",
+      "value": 6.0,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Invoices"
+    },
+    "cycle_time.squad.Mobile": {
+      "id": "cycle_time.squad.Mobile",
+      "label": "Cycle time, median, Mobile",
+      "value": 4.0,
+      "unit": "days",
+      "display": "4.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 46,
+      "method": "median for squad Mobile"
+    },
+    "cycle_time.squad.Payments": {
+      "id": "cycle_time.squad.Payments",
+      "label": "Cycle time, median, Payments",
+      "value": 6.0,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Payments"
+    },
+    "cycle_time.squad.Platform": {
+      "id": "cycle_time.squad.Platform",
+      "label": "Cycle time, median, Platform",
+      "value": 6.0,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Platform"
+    },
+    "cycle_time.squad.Quoting": {
+      "id": "cycle_time.squad.Quoting",
+      "label": "Cycle time, median, Quoting",
+      "value": 6.0,
+      "unit": "days",
+      "display": "6.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 46,
+      "method": "median for squad Quoting"
+    },
+    "cycle_time.squad.Reporting": {
+      "id": "cycle_time.squad.Reporting",
+      "label": "Cycle time, median, Reporting",
+      "value": 4.5,
+      "unit": "days",
+      "display": "4.5 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 48,
+      "method": "median for squad Reporting"
+    },
+    "cycle_time.squad.Scheduling": {
+      "id": "cycle_time.squad.Scheduling",
+      "label": "Cycle time, median, Scheduling",
+      "value": 4,
+      "unit": "days",
+      "display": "4.0 days",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 47,
+      "method": "median for squad Scheduling"
+    },
+    "reopen_rate": {
+      "id": "reopen_rate",
+      "label": "Share of completed items reopened",
+      "value": 0.1778,
+      "unit": "share",
+      "display": "18%",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 568,
+      "method": "items with reopened above 0, of items completed in the window"
+    },
+    "acceptance_criteria_share": {
+      "id": "acceptance_criteria_share",
+      "label": "Share of started items with acceptance criteria",
+      "value": 0.7222,
+      "unit": "share",
+      "display": "72%",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 576,
+      "method": "items started in the window"
+    },
+    "wip_per_person": {
+      "id": "wip_per_person",
+      "label": "Work in progress, mean",
+      "value": 0.7109,
+      "unit": "per person",
+      "display": "0.7 per person",
+      "source": "items.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 60,
+      "method": "items in progress per assignee per day, averaged over the window"
+    },
+    "cycles_in_window": {
+      "id": "cycles_in_window",
+      "label": "Cycles ending in the window",
+      "value": 6,
+      "unit": "count",
+      "display": "6",
+      "source": "cycles.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 6,
+      "method": "cycles whose end falls in the window"
+    },
+    "unplanned_share": {
+      "id": "unplanned_share",
+      "label": "Share of cycle work added after the cycle started",
+      "value": 0.4306,
+      "unit": "share",
+      "display": "43%",
+      "source": "items.csv + cycles.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 576,
+      "method": "items with planned false, of items in cycles ending in the window"
+    },
+    "planning_accuracy": {
+      "id": "planning_accuracy",
+      "label": "Planning accuracy",
+      "value": 0.9024,
+      "unit": "share",
+      "display": "90%",
+      "source": "items.csv + cycles.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 328,
+      "method": "planned items completed by their cycle end, of planned items"
+    },
+    "pr_authors": {
+      "id": "pr_authors",
+      "label": "Pull request authors",
+      "value": 60,
+      "unit": "count",
+      "display": "60",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 900,
+      "method": "distinct authors of pull requests opened in the window"
+    },
+    "review_wait_median": {
+      "id": "review_wait_median",
+      "label": "Time to first review, median",
+      "value": 30.4842,
+      "unit": "hours",
+      "display": "30 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 900,
+      "method": "first review minus opened, calendar hours"
+    },
+    "review_wait_p85": {
+      "id": "review_wait_p85",
+      "label": "Time to first review, 85th percentile",
+      "value": 55.6731,
+      "unit": "hours",
+      "display": "56 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 900,
+      "method": "nearest rank, calendar hours"
+    },
+    "review_wait.squad.Assistant": {
+      "id": "review_wait.squad.Assistant",
+      "label": "Time to first review, median, Assistant",
+      "value": 28.9067,
+      "unit": "hours",
+      "display": "29 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 65,
+      "method": "median for squad Assistant"
+    },
+    "review_wait.squad.Chasing": {
+      "id": "review_wait.squad.Chasing",
+      "label": "Time to first review, median, Chasing",
+      "value": 32.7675,
+      "unit": "hours",
+      "display": "33 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 67,
+      "method": "median for squad Chasing"
+    },
+    "review_wait.squad.Data": {
+      "id": "review_wait.squad.Data",
+      "label": "Time to first review, median, Data",
+      "value": 38.8077,
+      "unit": "hours",
+      "display": "39 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 79,
+      "method": "median for squad Data"
+    },
+    "review_wait.squad.Growth": {
+      "id": "review_wait.squad.Growth",
+      "label": "Time to first review, median, Growth",
+      "value": 28.8869,
+      "unit": "hours",
+      "display": "29 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 79,
+      "method": "median for squad Growth"
+    },
+    "review_wait.squad.Integrations": {
+      "id": "review_wait.squad.Integrations",
+      "label": "Time to first review, median, Integrations",
+      "value": 32.1522,
+      "unit": "hours",
+      "display": "32 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 77,
+      "method": "median for squad Integrations"
+    },
+    "review_wait.squad.Invoices": {
+      "id": "review_wait.squad.Invoices",
+      "label": "Time to first review, median, Invoices",
+      "value": 27.4112,
+      "unit": "hours",
+      "display": "27 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 87,
+      "method": "median for squad Invoices"
+    },
+    "review_wait.squad.Mobile": {
+      "id": "review_wait.squad.Mobile",
+      "label": "Time to first review, median, Mobile",
+      "value": 31.8036,
+      "unit": "hours",
+      "display": "32 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 70,
+      "method": "median for squad Mobile"
+    },
+    "review_wait.squad.Payments": {
+      "id": "review_wait.squad.Payments",
+      "label": "Time to first review, median, Payments",
+      "value": 32.7274,
+      "unit": "hours",
+      "display": "33 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 62,
+      "method": "median for squad Payments"
+    },
+    "review_wait.squad.Platform": {
+      "id": "review_wait.squad.Platform",
+      "label": "Time to first review, median, Platform",
+      "value": 30.3799,
+      "unit": "hours",
+      "display": "30 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 83,
+      "method": "median for squad Platform"
+    },
+    "review_wait.squad.Quoting": {
+      "id": "review_wait.squad.Quoting",
+      "label": "Time to first review, median, Quoting",
+      "value": 29.4864,
+      "unit": "hours",
+      "display": "29 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 73,
+      "method": "median for squad Quoting"
+    },
+    "review_wait.squad.Reporting": {
+      "id": "review_wait.squad.Reporting",
+      "label": "Time to first review, median, Reporting",
+      "value": 29.1201,
+      "unit": "hours",
+      "display": "29 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 78,
+      "method": "median for squad Reporting"
+    },
+    "review_wait.squad.Scheduling": {
+      "id": "review_wait.squad.Scheduling",
+      "label": "Time to first review, median, Scheduling",
+      "value": 30.4957,
+      "unit": "hours",
+      "display": "30 hours",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 80,
+      "method": "median for squad Scheduling"
+    },
+    "review_coverage": {
+      "id": "review_coverage",
+      "label": "Share of merged pull requests with an approval",
+      "value": 0.9182,
+      "unit": "share",
+      "display": "92%",
+      "source": "pull_requests.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 892,
+      "method": "merged in the window with 1 or more approvals"
+    },
+    "cross_functional_squads": {
+      "id": "cross_functional_squads",
+      "label": "Share of squads with product, design and engineering",
+      "value": 0.8333,
+      "unit": "share",
+      "display": "83%",
+      "source": "squads.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 12,
+      "method": "squads listing pm, design and eng roles"
+    },
+    "epic_success_criteria": {
+      "id": "epic_success_criteria",
+      "label": "Share of epics with success criteria",
+      "value": 0.6,
+      "unit": "share",
+      "display": "60%",
+      "source": "epics.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 30,
+      "method": "epics with success_criteria true"
+    },
+    "retro_closed_30d": {
+      "id": "retro_closed_30d",
+      "label": "Share of retro actions closed within 30 days",
+      "value": 0.2,
+      "unit": "share",
+      "display": "20%",
+      "source": "retro_actions.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 40,
+      "method": "actions raised in the window and at least 30 days before the as-of date"
+    },
+    "experiments_launched": {
+      "id": "experiments_launched",
+      "label": "Experiments launched",
+      "value": 4,
+      "unit": "count",
+      "display": "4",
+      "source": "experiments.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 4,
+      "method": "experiments with a launch date in the window"
+    },
+    "survey.delivery_velocity": {
+      "id": "survey.delivery_velocity",
+      "label": "Team survey, Delivery Velocity, mean score",
+      "value": 3.2368,
+      "unit": "of 5",
+      "display": "3.2 of 5",
+      "source": "survey.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 38,
+      "method": "mean of 1 to 5 responses, self-reported"
+    },
+    "survey.design_dev_handoff": {
+      "id": "survey.design_dev_handoff",
+      "label": "Team survey, Design-to-Dev Handoff, mean score",
+      "value": 2.4474,
+      "unit": "of 5",
+      "display": "2.4 of 5",
+      "source": "survey.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 38,
+      "method": "mean of 1 to 5 responses, self-reported"
+    },
+    "survey.knowledge_management": {
+      "id": "survey.knowledge_management",
+      "label": "Team survey, Knowledge Management, mean score",
+      "value": 1.8684,
+      "unit": "of 5",
+      "display": "1.9 of 5",
+      "source": "survey.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 38,
+      "method": "mean of 1 to 5 responses, self-reported"
+    },
+    "survey.process_iteration": {
+      "id": "survey.process_iteration",
+      "label": "Team survey, Process & Iteration, mean score",
+      "value": 4.1316,
+      "unit": "of 5",
+      "display": "4.1 of 5",
+      "source": "survey.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 38,
+      "method": "mean of 1 to 5 responses, self-reported"
+    },
+    "survey.team_orchestration": {
+      "id": "survey.team_orchestration",
+      "label": "Team survey, Team Orchestration, mean score",
+      "value": 3.3947,
+      "unit": "of 5",
+      "display": "3.4 of 5",
+      "source": "survey.csv",
+      "window": {
+        "from": "2026-08-23",
+        "to": "2026-11-20"
+      },
+      "as_of": "2026-11-20",
+      "n": 38,
+      "method": "mean of 1 to 5 responses, self-reported"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "market_intelligence",
+      "name": "Market Intelligence",
+      "function": "Strategy",
+      "question": "Does your team have continuous, systematic visibility into market shifts?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the strategy documents, decision records and roadmap history directly."
+    },
+    {
+      "id": "decision_quality",
+      "name": "Decision Quality",
+      "function": "Strategy",
+      "question": "Are product decisions backed by evidence and structured frameworks?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the strategy documents, decision records and roadmap history directly."
+    },
+    {
+      "id": "roadmap_discipline",
+      "name": "Roadmap Discipline",
+      "function": "Strategy",
+      "question": "Is the roadmap shaped by evidence and strategy, or by opinions and requests?",
+      "read": "range",
+      "floor": 1,
+      "ceiling": 2,
+      "stage": null,
+      "stage_name": null,
+      "findings": [
+        {
+          "rule": "roadmap_discipline.unplanned",
+          "figures": [
+            "unplanned_share"
+          ],
+          "bound": [
+            "ceiling",
+            2
+          ],
+          "says": "Share of cycle work added after the cycle started: 43%. More than 40% of cycle work arrives after planning, which reads as reactive prioritisation (rubric Stage 2).",
+          "next_step": "Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source."
+        }
+      ],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source."
+    },
+    {
+      "id": "competitive_positioning",
+      "name": "Competitive Positioning",
+      "function": "Strategy",
+      "question": "Does the team track competitor capabilities and market shifts systematically?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the strategy documents, decision records and roadmap history directly."
+    },
+    {
+      "id": "research_discovery",
+      "name": "Research & Discovery",
+      "function": "Design",
+      "question": "Does user research systematically feed product decisions?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the research repository, prototypes and design system directly."
+    },
+    {
+      "id": "prototyping_speed",
+      "name": "Prototyping Speed",
+      "function": "Design",
+      "question": "How fast does the team move from insight to validated solution?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the research repository, prototypes and design system directly."
+    },
+    {
+      "id": "experience_design",
+      "name": "Experience Design",
+      "function": "Design",
+      "question": "Does the product use modern interaction patterns?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the research repository, prototypes and design system directly."
+    },
+    {
+      "id": "design_dev_handoff",
+      "name": "Design-to-Dev Handoff",
+      "function": "Design",
+      "question": "Is handoff a shared, continuous collaboration or a document toss?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": {
+        "figure": "survey.design_dev_handoff",
+        "shown": true,
+        "says": "Team view (self-reported): 2.4 of 5 from 38 responses."
+      },
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the research repository, prototypes and design system directly."
+    },
+    {
+      "id": "architecture_systems",
+      "name": "Architecture & Systems",
+      "function": "Development",
+      "question": "Does the architecture support real-time data, automation, and modern tooling?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the architecture records and build-or-buy decisions directly."
+    },
+    {
+      "id": "spec_context_quality",
+      "name": "Spec & Context Quality",
+      "function": "Development",
+      "question": "Do specs carry enough context for developers to build without guessing?",
+      "read": "range",
+      "floor": 1,
+      "ceiling": 2,
+      "stage": null,
+      "stage_name": null,
+      "findings": [
+        {
+          "rule": "spec_context_quality.reopens",
+          "figures": [
+            "reopen_rate"
+          ],
+          "bound": [
+            "ceiling",
+            2
+          ],
+          "says": "Share of completed items reopened: 18%. More than 15% of finished work comes back, a sign builders are guessing at edge cases (rubric Stage 2).",
+          "next_step": "Sample 10 reopened items, name the missing context in each, and add the most common gap to the spec template."
+        }
+      ],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Sample 10 reopened items, name the missing context in each, and add the most common gap to the spec template."
+    },
+    {
+      "id": "build_vs_buy",
+      "name": "Build vs. Buy Decisions",
+      "function": "Development",
+      "question": "Is there a framework for evaluating build vs. buy tradeoffs?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the architecture records and build-or-buy decisions directly."
+    },
+    {
+      "id": "delivery_velocity",
+      "name": "Delivery Velocity",
+      "function": "Development",
+      "question": "Does the team have differentiated delivery pipelines for different work types?",
+      "read": "range",
+      "floor": 3,
+      "ceiling": 5,
+      "stage": null,
+      "stage_name": null,
+      "findings": [
+        {
+          "rule": "delivery_velocity.lanes",
+          "figures": [
+            "lane_ratio",
+            "cycle_time_median"
+          ],
+          "bound": [
+            "floor",
+            3
+          ],
+          "says": "Median cycle time, bug over feature is 0.20: one work type moves through in half the time or less, a proxy for a separate delivery lane (rubric Stage 3).",
+          "next_step": "Show Stage 4: add automated evaluation to the fast lane so its changes ship on a passing check, not a sprint review."
+        },
+        {
+          "rule": "cycle_time.by_squad",
+          "figures": [
+            "cycle_time.squad.Data",
+            "cycle_time.squad.Integrations",
+            "cycle_time.squad.Invoices"
+          ],
+          "bound": null,
+          "says": "Slowest squads by median cycle time: Data (7.0 days), Integrations (6.0 days), Invoices (6.0 days).",
+          "next_step": null,
+          "context": true
+        }
+      ],
+      "survey": {
+        "figure": "survey.delivery_velocity",
+        "shown": true,
+        "says": "Team view (self-reported): 3.2 of 5 from 38 responses."
+      },
+      "survey_disagrees": null,
+      "next_step": "Show Stage 4: add automated evaluation to the fast lane so its changes ship on a passing check, not a sprint review."
+    },
+    {
+      "id": "customer_signal_synthesis",
+      "name": "Customer Signal Synthesis",
+      "function": "Intelligence",
+      "question": "Is customer feedback synthesised across channels into actionable insights?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the analytics setup and customer feedback pipeline directly."
+    },
+    {
+      "id": "product_analytics",
+      "name": "Product Analytics",
+      "function": "Intelligence",
+      "question": "Does the team have behavioural depth beyond page views and DAU?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the analytics setup and customer feedback pipeline directly."
+    },
+    {
+      "id": "data_strategy_flywheel",
+      "name": "Data Strategy & Flywheel",
+      "function": "Intelligence",
+      "question": "Is data used strategically to improve decisions and product quality over time?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the analytics setup and customer feedback pipeline directly."
+    },
+    {
+      "id": "feedback_loop_quality",
+      "name": "Feedback Loop Quality",
+      "function": "Intelligence",
+      "question": "Do feedback mechanisms connect directly to product improvement?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the analytics setup and customer feedback pipeline directly."
+    },
+    {
+      "id": "knowledge_management",
+      "name": "Knowledge Management",
+      "function": "Operations",
+      "question": "Is institutional knowledge captured, accessible, and current?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": {
+        "figure": "survey.knowledge_management",
+        "shown": true,
+        "says": "Team view (self-reported): 1.9 of 5 from 38 responses."
+      },
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the operating documents, cost reporting and incident records directly."
+    },
+    {
+      "id": "quality_experimentation",
+      "name": "Quality & Experimentation",
+      "function": "Operations",
+      "question": "Does the team have experimentation culture and infrastructure?",
+      "read": "range",
+      "floor": 3,
+      "ceiling": 5,
+      "stage": null,
+      "stage_name": null,
+      "findings": [
+        {
+          "rule": "quality_experimentation.experiments",
+          "figures": [
+            "experiments_launched"
+          ],
+          "bound": [
+            "floor",
+            3
+          ],
+          "says": "Experiments launched: 4 in the window. Experimentation infrastructure is in use (rubric Stage 3).",
+          "next_step": "Show Stage 4: add a pre-registered success metric and a stop rule to every experiment."
+        }
+      ],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Show Stage 4: add a pre-registered success metric and a stop rule to every experiment."
+    },
+    {
+      "id": "team_orchestration",
+      "name": "Team Orchestration",
+      "function": "Operations",
+      "question": "Are teams organised for cross-functional collaboration, not silos?",
+      "read": "stage",
+      "floor": 3,
+      "ceiling": 3,
+      "stage": 3,
+      "stage_name": "Scaling",
+      "findings": [
+        {
+          "rule": "team_orchestration.squads",
+          "figures": [
+            "cross_functional_squads"
+          ],
+          "bound": [
+            "floor",
+            3
+          ],
+          "says": "Share of squads with product, design and engineering: 83%. Cross-functional squads are the norm (rubric Stage 3).",
+          "next_step": "Show Stage 4: move operational expertise into squads so no separate team gates their work."
+        },
+        {
+          "rule": "team_orchestration.review_wait",
+          "figures": [
+            "review_wait_median",
+            "review_wait_p85"
+          ],
+          "bound": [
+            "ceiling",
+            3
+          ],
+          "says": "Time to first review, median: 30 hours. Work waits more than a day for a second pair of eyes, so collaboration is not yet the default (rubric Stage 4).",
+          "next_step": "Set a same-day first-review norm with a named reviewer rota per squad, and track the median weekly."
+        },
+        {
+          "rule": "review_wait.by_squad",
+          "figures": [
+            "review_wait.squad.Data",
+            "review_wait.squad.Chasing",
+            "review_wait.squad.Payments"
+          ],
+          "bound": null,
+          "says": "Slowest squads by median time to first review: Data (39 hours), Chasing (33 hours), Payments (33 hours).",
+          "next_step": null,
+          "context": true
+        }
+      ],
+      "survey": {
+        "figure": "survey.team_orchestration",
+        "shown": true,
+        "says": "Team view (self-reported): 3.4 of 5 from 38 responses."
+      },
+      "survey_disagrees": null,
+      "next_step": "Set a same-day first-review norm with a named reviewer rota per squad, and track the median weekly."
+    },
+    {
+      "id": "process_iteration",
+      "name": "Process & Iteration",
+      "function": "Operations",
+      "question": "Do retros and process reviews actually change how the team works?",
+      "read": "range",
+      "floor": 1,
+      "ceiling": 2,
+      "stage": null,
+      "stage_name": null,
+      "findings": [
+        {
+          "rule": "process_iteration.retro_actions",
+          "figures": [
+            "retro_closed_30d"
+          ],
+          "bound": [
+            "ceiling",
+            2
+          ],
+          "says": "Share of retro actions closed within 30 days: 20%. Retros surface friction but few fixes land (rubric Stage 2).",
+          "next_step": "Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result."
+        }
+      ],
+      "survey": {
+        "figure": "survey.process_iteration",
+        "shown": true,
+        "says": "Team view (self-reported): 4.1 of 5 from 38 responses."
+      },
+      "survey_disagrees": "The team's own view sits more than a stage away from what the exports show. Ask why before acting on either.",
+      "next_step": "Cut each retro to one action with a named owner and a 2-week due date, and open the next retro with its result."
+    },
+    {
+      "id": "unit_economics",
+      "name": "Unit Economics",
+      "function": "Operations",
+      "question": "Does the team have visibility into per-feature cost and margin?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the operating documents, cost reporting and incident records directly."
+    },
+    {
+      "id": "security_compliance",
+      "name": "Security & Compliance",
+      "function": "Operations",
+      "question": "Are security and compliance built into the development process?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the operating documents, cost reporting and incident records directly."
+    },
+    {
+      "id": "reliability_resilience",
+      "name": "Reliability & Resilience",
+      "function": "Operations",
+      "question": "Can the system handle failures gracefully and recover quickly?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the operating documents, cost reporting and incident records directly."
+    },
+    {
+      "id": "positioning_messaging",
+      "name": "Positioning & Messaging",
+      "function": "Go-to-Market",
+      "question": "Does positioning describe differentiated value, not features?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the positioning, launch plans and pricing records directly."
+    },
+    {
+      "id": "launch_execution",
+      "name": "Launch Execution",
+      "function": "Go-to-Market",
+      "question": "Is there a structured launch playbook?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the positioning, launch plans and pricing records directly."
+    },
+    {
+      "id": "adoption_expansion",
+      "name": "Adoption & Expansion",
+      "function": "Go-to-Market",
+      "question": "Is there a product-led growth motion?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the positioning, launch plans and pricing records directly."
+    },
+    {
+      "id": "pricing_packaging",
+      "name": "Pricing & Packaging",
+      "function": "Go-to-Market",
+      "question": "Does pricing capture the value the product creates?",
+      "read": "not_read",
+      "floor": null,
+      "ceiling": null,
+      "stage": null,
+      "stage_name": null,
+      "findings": [],
+      "survey": null,
+      "survey_disagrees": null,
+      "next_step": "Not readable from tracker, source-control or survey exports. Book a full Team Operations read to review the positioning, launch plans and pricing records directly."
+    }
+  ],
+  "overall": {
+    "claimed": false,
+    "single_stage_reads": 1,
+    "of": 27,
+    "why": "An overall Team Operations stage needs a single-stage read on all 27 dimensions. This read has 1, so no overall stage or level is claimed."
+  },
+  "start_here": {
+    "dimension": "roadmap_discipline",
+    "name": "Roadmap Discipline",
+    "next_step": "Tag each unplanned item with its source (sales, incident, executive, customer) for 2 cycles, then cap the largest source.",
+    "recheck_figure": "unplanned_share"
+  }
+}

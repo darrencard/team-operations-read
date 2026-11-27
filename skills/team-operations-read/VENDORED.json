@@ -1,0 +1,29 @@
+{
+  "repository": "https://github.com/darrencard/product-engineering-update",
+  "commit": "366da9bfede540ec19e9164ad5ad17ce28c1d06b",
+  "release": "v0.11.0 line, main at 2026-11-26 (the same commit did-it-land pins)",
+  "rule": "Copied unchanged. Never edit these files here; copy them again from the commit and update this file and its hashes.",
+  "why": "The Leader Report's GitHub and Linear collectors read the exports as GitHub and Linear return them. scripts/from_github.py and scripts/from_linear.py call their readers, then add only what a Team Operations read needs (author, approvals, squad, started date, cycle). from_linear.py imports collect.py and landing_brief.py, so both ship beside it. This skill reads no landing brief.",
+  "files": {
+    "scripts/vendor/collect.py": {
+      "from": "skills/product-engineering-update/scripts/collect.py",
+      "sha256": "f58d3cd6db1fc7a5e73441618ed94460189aeb724be1c42934313d23d5bd93c4"
+    },
+    "scripts/vendor/from_github.py": {
+      "from": "skills/product-engineering-update/scripts/from_github.py",
+      "sha256": "87fdfc8f9b7b62335639c7b8976693b4ad7bd4638f0b0947e1496de1f1c54d47"
+    },
+    "scripts/vendor/from_linear.py": {
+      "from": "skills/product-engineering-update/scripts/from_linear.py",
+      "sha256": "0aea681e00c2ab15e37031d058ad4b81e5cea25c2da25a47dfc4138e481b922d"
+    },
+    "scripts/vendor/landing_brief.py": {
+      "from": "skills/landing-brief/scripts/landing_brief.py",
+      "sha256": "2d13573543c74ebe1bf001b97287287474a0ec298f34709a1bbfc643be051948"
+    },
+    "assets/vendor/template.html": {
+      "from": "skills/product-engineering-update/assets/template.html",
+      "sha256": "e5740431ab5269606709d352d3d253325df740830e8316f06478873e71d430d0"
+    }
+  }
+}

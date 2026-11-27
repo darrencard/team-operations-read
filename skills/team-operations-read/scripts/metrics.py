@@ -1,7 +1,8 @@
 """Compute every figure a read uses. The model never does this arithmetic.
 
-Each figure is a dict: id, label, value, unit, display, source, n, method. A figure that cannot be
-computed (file absent, or no rows in the window) is left out, never estimated.
+Each figure is a dict: id, label, value, unit, display, source, window (from, to), as_of, n, method,
+the same fields the Landing Loop contract asks of every figure. A figure that cannot be computed (file
+absent, or no rows in the window) is left out, never estimated.
 
 Percentiles use the nearest-rank method. Medians use the standard median (mean of the middle two
 for an even count). Durations: cycle time in whole calendar days, review latency in calendar hours.
@@ -47,8 +48,10 @@ def _fmt(value: float, unit: str) -> str:
 
 
 class Ledger:
-    def __init__(self) -> None:
+    def __init__(self, start: date, end: date) -> None:
         self.figures: dict[str, dict] = {}
+        self.window = {"from": start.isoformat(), "to": end.isoformat()}
+        self.as_of = end.isoformat()
 
     def add(self, fid: str, label: str, value: float, unit: str, source: str, n: int, method: str) -> None:
         self.figures[fid] = {
@@ -58,6 +61,8 @@ class Ledger:
             "unit": unit,
             "display": _fmt(value, unit),
             "source": source,
+            "window": dict(self.window),
+            "as_of": self.as_of,
             "n": n,
             "method": method,
         }
@@ -267,7 +272,7 @@ def _prs(led: Ledger, prs: list[dict], start: date, end: date) -> None:
 
 def compute(data: dict, as_of: date, window_days: int) -> dict:
     start = as_of - timedelta(days=window_days - 1)
-    led = Ledger()
+    led = Ledger(start, as_of)
     if "items" in data:
         _items(led, data["items"], data.get("cycles"), start, as_of)
     if "pull_requests" in data:
