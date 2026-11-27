@@ -5,10 +5,13 @@ at a pinned commit) and draws its picture with svgkit (scripts/vendor/svgkit.py,
 landing-loop). Only a few rules for this page's layout are added.
 
 It reads top down for someone who has never seen the framework: the shared header, where to start as the heading,
-the area grid (every one of the 27 areas, the read ones shaded by level, the rest hatched because these exports
-can't see them, the place to start ringed), then one thing to do next, owned by the person named. The areas read
-and what the exports can't see follow in two columns. Each area in full, the evidence ledger and everything
-technical sit in folds. Public copy uses plain words: area, level, scoring guide. The stored JSON keeps its words.
+the areas read as scorecard rows (svgkit 1.2.0): one row per area the exports can read, five pips for levels 1 to 5
+filled to the band's floor and dashed where the evidence allows a level but cannot confirm it, the band in words
+("level 2 or below", "level 3 or above", never an exact level), START HERE on the one to start with, and the areas
+these exports can't see as one muted line. Geist Mono 12px for labels and figures, Geist 14px for names, no text
+inside a picture, no box inside the frame. Then one thing to do next, owned by the person named. The areas read and
+what the exports can't see follow in two columns. Each area in full, the evidence ledger and everything technical
+sit in folds. Public copy uses plain words: area, level, scoring guide. The stored JSON keeps its words.
 
 A team read has no project status, so the page uses no status colour: landed, watch and stalled belong to
 did-it-land. Brass is only the person who decides the next step. Nothing is loaded from the network, nothing in the
@@ -39,10 +42,8 @@ main.solo{margin-left:0}
 .solo h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.04em;max-width:20ch;margin-bottom:20px}
 .solo .lede{margin-bottom:24px}
 .solo h2{margin-bottom:16px}
-.status{display:inline-block;font:400 11px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border:1px solid var(--line3);border-radius:3px;padding:1px 6px;white-space:nowrap}
-.verdict{margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px}
-.panel{border:1px solid var(--line);border-radius:12px;background:var(--s1);padding:24px 28px 20px}
-@media (min-width:1100px){.panel .sk{display:grid;grid-template-columns:720px minmax(0,1fr);gap:16px 40px;align-items:start}.panel .sk figcaption{margin-top:0;flex-direction:column;align-items:flex-start}}
+.status{display:inline-block;font:400 12px/16px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
+.verdict{margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px 28px}
 .next{margin-top:28px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px 32px;align-items:baseline;border:1px solid var(--brass);border-radius:12px;padding:20px 24px;background:var(--brass-bg)}
 .next>b{font:400 11px/22px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
 .next p{margin:0;font-size:16px;line-height:1.5;color:var(--t1)}
@@ -73,11 +74,10 @@ main.solo{margin-left:0}
 ::selection{background:var(--t1);color:var(--bg)}
 :focus-visible{outline:2px solid var(--t1);outline-offset:3px;border-radius:3px}
 .foot{max-width:1120px;margin:0 auto;padding:28px 40px 64px;color:var(--t3);font-size:12px}
-@media (max-width:980px){.foot{padding:24px 16px 48px}.solo .slide.cover{padding-top:24px}.cols,.next{grid-template-columns:1fr}.panel{padding:18px 16px 16px}
+@media (max-width:980px){.foot{padding:24px 16px 48px}.solo .slide.cover{padding-top:24px}.cols,.next{grid-template-columns:1fr}
 .stack table,.stack tbody,.stack tr,.stack td{display:block}.stack tr:first-child{display:none}.stack tr{padding:10px 16px;border-bottom:1px solid var(--line)}
 .stack td{border:0;padding:3px 0;display:grid;grid-template-columns:118px 1fr;gap:12px}.stack td.num{text-align:left;white-space:normal}
 .stack td::before{content:attr(data-l);font:400 11px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
-@media (max-width:440px){.panel{margin:0 -8px;padding:16px 8px 14px}}
 """
 
 # The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk
@@ -162,15 +162,6 @@ def level(d: dict) -> str:
     return UNSEEN
 
 
-def short_level(d: dict) -> str:
-    """The level as the grid prints it, in a box 112 wide."""
-    if d["read"] == "stage":
-        return f"Level {d['stage']}"
-    if d["read"] == "conflict":
-        return "Mixed"
-    return level(d).removeprefix("Level ")
-
-
 def fold(title: str, body: str) -> str:
     return f"<details><summary>{e(title)}</summary>{body}</details>"
 
@@ -194,128 +185,48 @@ class Table:
         return f'<div class="tablewrap stack"><table>{head}{"".join(self.rows)}</table></div>'
 
 
-# The signature picture: the area grid
+# The signature picture: scorecard rows (svgkit 1.2.0)
 
 
-def wrap(text: str, chars: int) -> list[str]:
-    """Words into lines of at most `chars` characters, so a name fits its box."""
-    lines: list[str] = []
-    for word in text.split():
-        if lines and len(lines[-1]) + 1 + len(word) <= chars:
-            lines[-1] += " " + word
-        else:
-            lines.append(word)
-    return lines
+def band(d: dict) -> tuple[str, int, int]:
+    """The band the picture draws for an area read, never an exact level: (words, pips filled, pips dashed). Level 3
+    or above fills three and dashes the two it allows; level 2 or below fills the floor and dashes up to 2; any other
+    range fills its floor and dashes to its ceiling; mixed evidence fills none."""
+    if d["read"] == "conflict":
+        return "mixed evidence", 0, 0
+    lo, hi = (d["stage"], d["stage"]) if d["read"] == "stage" else (d["floor"], d["ceiling"])
+    if lo >= 3:
+        return f"level {lo} or above", lo, 5 - lo
+    if hi <= 2:
+        return f"level {hi} or below", lo, hi - lo
+    return f"level {lo} to {hi}", lo, hi - lo
 
 
-def _bar(x: float, y: float, w: float, *, filled: bool) -> str:
-    if filled:
-        return f'<rect x="{sk.num(x)}" y="{sk.num(y)}" width="{sk.num(w)}" height="8" rx="1" fill="{sk.INK}"/>'
-    return (
-        f'<rect x="{sk.num(x + 0.75)}" y="{sk.num(y + 0.75)}" width="{sk.num(w - 1.5)}" height="6.5" rx="1" fill="none" stroke="{sk.INK}" stroke-width="1.5"/>'
-    )
-
-
-def meter(x: float, y: float, d: dict, width: float) -> str:
-    """Five marks for levels 1 to 5. Filled: levels the evidence shows. Outlined: levels it allows but cannot
-    confirm. Faint: levels it rules out."""
-    gap = 3.0
-    w = (width - 4 * gap) / 5
-    parts = []
-    for st in range(1, 6):
-        mx = x + (st - 1) * (w + gap)
-        if d["read"] == "stage":
-            shown, allowed = st <= d["stage"], False
-        elif d["read"] == "range":
-            shown, allowed = st <= d["floor"], d["floor"] < st <= d["ceiling"]
-        else:  # conflict: the two ends the evidence points at, neither confirmed
-            shown, allowed = False, st in (d["floor"], d["ceiling"])
-        if shown or allowed:
-            parts.append(_bar(mx, y, w, filled=shown))
-        else:
-            parts.append(f'<rect x="{sk.num(mx)}" y="{sk.num(y)}" width="{sk.num(w)}" height="8" rx="1" fill="{sk.LINE}"/>')
-    return "".join(parts)
-
-
-def area_tile(x: float, y: float, w: float, h: float, d: dict, chars: int, hid: str, start: bool) -> str:
-    """One area. Read: a shaded box with its name, its level and the meter. Not read: an outline with its name and a
-    hatched strip where the level would be."""
-    read = d["read"] != "not_read"
-    parts = []
-    if read:
-        parts.append(f'<rect x="{sk.num(x)}" y="{sk.num(y)}" width="{sk.num(w)}" height="{sk.num(h)}" rx="4" fill="var(--s2)"/>')
-        parts.append(sk.tile(x, y, w, h, tone=sk.INK))
-    else:
-        parts.append(sk.tile(x, y, w, h, tone=sk.LINE2))
-    for i, line in enumerate(wrap(d["name"], chars)[:2]):
-        parts.append(sk.value(x + 9, y + 19 + i * 15, line, size=12.5, tone=sk.INK if read else sk.MUTED))
-    if read:
-        parts.append(sk.label(x + 9, y + h - 20, short_level(d), tone=sk.INK))
-        parts.append(meter(x + 9, y + h - 14, d, w - 18))
-    else:
-        parts.append(sk.hatched(x + 9, y + h - 15, w - 18, 8, pattern_id=hid, rx=1))
-    if start:
-        parts.append(
-            f'<rect x="{sk.num(x - 5)}" y="{sk.num(y - 5)}" width="{sk.num(w + 10)}" height="{sk.num(h + 10)}" rx="9" fill="none" stroke="{sk.INK}" stroke-width="1.5"/>'
-        )
-        parts.append(sk.chip(x + w - sk.chip_width("Start here") + 5, y - 14, "Start here", tone=sk.INK, filled=True))
-    return "".join(parts)
-
-
-def key(x: float, y: float, hid: str, stacked: bool) -> str:
-    """The key, in the picture's own marks."""
-    items = [
-        (_bar(0, -8, 22, filled=True), "Level shown"),
-        (_bar(0, -8, 22, filled=False), "Level possible"),
-        (sk.hatched(0, -8, 22, 8, pattern_id=hid, rx=1), UNSEEN),
-    ]
-    parts = []
-    cx = x
-    for i, (mark, text) in enumerate(items):
-        dx, dy = (x, y + i * 20.0) if stacked else (cx, y)
-        parts.append(f'<g transform="translate({sk.num(dx)} {sk.num(dy)})">{mark}{sk.label(30, 0, text)}</g>')
-        cx += 30 + sk.label_width(text) + 26
-    return "".join(parts)
-
-
-def area_grid(doc: dict, variant: str) -> str:
-    """Every one of the 27 areas, by function. Wide: one column per function. Tall: each function in turn, two areas
-    to a row."""
-    wide = variant == "wide"
-    hid = f"sk-to-hatch-{variant}"
+def area_rows(doc: dict) -> str:
+    """One row per area these exports can read: its name, five pips for levels 1 to 5 (filled to the band's floor, the
+    rest of the band dashed), the band in words, and START HERE on the one to start with. The areas the exports can't
+    see are one muted line, never empty rows."""
     start = (doc["start_here"] or {}).get("dimension")
-    by_fn = {fn: [d for d in doc["dimensions"] if d["function"] == fn] for fn in FUNCTIONS}
-    parts = [sk.defs(sk.hatch_pattern(hid))]
-    th, gap = 74.0, 12.0
-    if wide:
-        width, col, tw, top = sk.WIDE, 120.0, 112.0, 30.0
-        for c, fn in enumerate(FUNCTIONS):
-            x = c * col
-            parts.append(sk.label(x, 12, fn, tone=sk.INK2))
-            for r, d in enumerate(by_fn[fn]):
-                parts.append(area_tile(x, top + r * (th + gap), tw, th, d, 15, hid, d["id"] == start))
-        rows = max(len(v) for v in by_fn.values())
-        y = top + rows * (th + gap) + 14
-        parts.append(key(0, y, hid, stacked=False))
-        height = y + 8
-    else:
-        width, tw = sk.TALL, 164.0
-        y = 12.0
-        for fn in FUNCTIONS:
-            parts.append(sk.label(0, y, fn, tone=sk.INK2))
-            y += 18
-            group = by_fn[fn]
-            for pair in (group[i : i + 2] for i in range(0, len(group), 2)):
-                # A row of areas the exports can't see needs no room for a level, so the phone's grid stays short.
-                lines = max(len(wrap(d["name"], 22)) for d in pair)
-                rh = th if any(d["read"] != "not_read" for d in pair) else 30.0 + 15 * lines
-                for i, d in enumerate(pair):
-                    parts.append(area_tile(0.0 if i == 0 else width - tw, y, tw, rh, d, 22, hid, d["id"] == start))
-                y += rh + gap
-            y += 16
-        parts.append(key(0, y, hid, stacked=True))
-        height = y + 48
-    return sk.frame("".join(parts), label=aria(doc), height=height, width=width, variant=variant)
+    read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
+    rows = []
+    for d in read:
+        words, filled, dashed = band(d)
+        word = sk.check_word("Start here", ink=True) if d["id"] == start else sk.check_word(d["function"])
+        rows.append(sk.sc_row(d["name"], picture=sk.pips(filled, 5, dashed=dashed), figure=sk.figure_line(words), word=word))
+    unread = len(doc["dimensions"]) - len(read)
+    if unread:
+        rows.append(sk.sc_note(f"{unread} areas not visible in these exports"))
+    return sk.sc_frame(
+        rows,
+        label=aria(doc),
+        title="Areas read",
+        head=["Area", "Levels 1 to 5", "Band", "Start here · function"],
+        caption=(
+            f"One row per area these exports can read, {len(read)} of the 27: five pips for levels 1 to 5, filled to the band's floor and "
+            "dashed where the evidence allows the level but cannot confirm it."
+        ),
+        illustrative=bool(doc["illustrative"]),
+    )
 
 
 def aria(doc: dict) -> str:
@@ -493,14 +404,6 @@ def page(doc: dict) -> str:
     sh = doc["start_here"]
     header = sk.page_header("Team operations read", date=doc["as_of"], version=f"v{doc['version']}", illustrative=ill)
     read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
-    pic = sk.figure(
-        area_grid(doc, "wide"),
-        area_grid(doc, "tall"),
-        caption=f"Each box is one of the 27 areas Team Operations scores, under its function. The {len(read)} shaded boxes are the areas these "
-        "exports can read: the five marks are levels 1 to 5, filled where the evidence shows the level and outlined where it allows it but "
-        f"cannot confirm it. The {27 - len(read)} hatched boxes can't be seen from these exports. The ringed box is where to start.",
-        illustrative=ill,
-    )
     chips = f'<span class="status">{len(read)} of 27 areas read</span>'
     if sh:
         d = next(x for x in doc["dimensions"] if x["id"] == sh["dimension"])
@@ -519,7 +422,7 @@ def page(doc: dict) -> str:
         )
     cover = (
         f'<section class="slide cover">{header}<h1>{e(heading(doc))}</h1><p class="lede">{e(lede(doc))}</p>'
-        f'<p class="verdict">{chips}</p><div class="panel">{pic}</div>{step}</section>'
+        f'<p class="verdict">{chips}</p>{area_rows(doc)}{step}</section>'
     )
     limits = "".join(f"<li>{e(x)}</li>" for x in LIMITS)
     detail = (
@@ -539,7 +442,7 @@ def page(doc: dict) -> str:
     title = f"Team Operations read: {doc['company']}"
     return (
         '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        f'<title>{e(title)}</title><style>{floor_fonts(stylesheet() + sk.CSS + PAGE_CSS)}</style></head><body><main class="solo">{cover}{detail}{more}'
+        f'<title>{e(title)}</title><style>{floor_fonts(stylesheet() + sk.CSS + sk.SCORECARD_CSS + PAGE_CSS)}</style></head><body><main class="solo">{cover}{detail}{more}'
         '<p class="foot">Every figure is computed in code from the exports named, and every level comes from a rule in references/rules.md. '
         "This read is about the team, not a project: it writes nothing into a Landing Loop project file.</p></main></body></html>\n"
     )

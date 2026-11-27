@@ -1,10 +1,10 @@
 ---
 name: team-operations-read
-description: Scores how a product team works against Dacard's Team Operations framework (27 dimensions, 6 functions, 5 stages) from GitHub, Linear or CSV exports (cycle time, work in progress, planning accuracy, review latency) plus an optional team survey. Computes every figure in code with its source and window, gives each dimension it can read a stage or a bounded range with its evidence and one next step, claims no stage or level the evidence does not support, and renders one HTML page in the Leader Report style. Outside the Landing Loop's bet record: it reads the team that runs the bets and writes no record key. Use when the user asks to assess, score, benchmark or diagnose how their product or engineering team operates, wants a Team Operations read, or asks how mature their delivery, planning, review or retro practice is. Also use to check a draft about a team's operating maturity for unsupported stage claims or unsourced figures.
+description: Scores how a product team works against Dacard's Team Operations framework (27 dimensions, 6 functions, 5 stages) from GitHub, Linear or CSV exports (cycle time, work in progress, planning accuracy, review latency) plus an optional team survey. Computes every figure in code with its source and window, gives each dimension it can read a stage or a bounded range with its evidence and one next step, claims no stage or level the evidence does not support, and renders one HTML page in the Leader Report style. Outside the Landing Loop's project files: it reads the team that runs the projects and writes no project file's key. Use when the user asks to assess, score, benchmark or diagnose how their product or engineering team operates, wants a Team Operations read, or asks how mature their delivery, planning, review or retro practice is. Also use to check a draft about a team's operating maturity for unsupported stage claims or unsourced figures.
 license: MIT. See LICENSE in the repository root.
 metadata:
   author: Dacard
-  version: "0.3.1"
+  version: "0.3.2"
 ---
 
 # Team Operations read
@@ -13,7 +13,7 @@ Reads a folder of exports and scores the dimensions of Dacard's Team Operations 
 
 Everything runs locally. The scripts make no network calls. Do not send the user's data anywhere. Check the interpreter first: `python3 --version` must be 3.11 or later (macOS ships 3.9); use `python3.11` or later if not.
 
-**Outside the Landing Loop's bet record.** The loop's skills each write one key of `landing/<bet>.json`. This skill reads the team that runs the bets, not a bet, so it writes no key and never opens a record. Its words are stages ("Stage 3", "Stage 2 or below", "conflicting evidence", "not read"). The page and the Markdown print them in plain words, a stage as a level and a dimension as an area ("level 3", "level 2 or below", "mixed evidence, no level", "can't see from these exports"); `read.json` keeps the framework's words. Write to the user in the plain words too. Never call a team or a dimension landed, watch or stalled: those are a bet's status words, and only did-it-land sets them.
+**Outside the Landing Loop's project files.** The loop's skills each write one key of `landing/<bet>.json`. This skill reads the team that runs the projects, not a project, so it writes no key and never opens a project file. Its words are stages ("Stage 3", "Stage 2 or below", "conflicting evidence", "not read"). The page and the Markdown print them in plain words, a stage as a level and a dimension as an area ("level 3", "level 2 or below", "mixed evidence, no level", "can't see from these exports"); `read.json` keeps the framework's words. Write to the user in the plain words too: project, not bet, unless the user says bet, then use their word. Never call a team or a dimension landed, watch or stalled: those are a project's status words, and only did-it-land sets them.
 
 ## Quick start: live data first
 
@@ -78,7 +78,7 @@ It writes `run/read.json`, `run/read.md` and `run/read.html`. `--decides` names 
 
 ### 3. Show
 
-Show `run/read.md` as written, and offer `run/read.html` (one self-contained page in the Leader Report style, ready to send): the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
+Show `run/read.md` as written, and offer `run/read.html` (one self-contained page in the Leader Report style, ready to send): the areas read as scorecard rows, each drawn as a band of levels and never an exact level, with the one to start with marked, the start-here step, the summary table, one section per read dimension, how to use the read, the not-read list and the evidence ledger. Lead with the start-here step, which the script picks (conflicting evidence first, then the lowest ceiling), and its re-check date. Do not add stages, figures or benchmarks. If the data is marked Illustrative, say so first.
 
 ### 4. Check
 

@@ -8,7 +8,7 @@ Install the team-operations-read skill from https://github.com/darrencard/team-o
 
 **Why it matters:** maturity scores usually come from a survey and a hunch. This one comes from how work moved: cycle time, work in progress, unplanned work, review wait, retro follow-through. Code computes every figure and cites its source, and the read claims no stage the evidence does not support.
 
-**Where it sits:** outside the Landing Loop's bet record. The loop reads each bet; this skill reads the team that runs the bets. It writes no key into `landing/<bet>.json`.
+**Where it sits:** outside the Landing Loop's project files. The loop reads each project; this skill reads the team that runs the projects. It writes no key into `landing/<bet>.json`.
 
 ## Try it on Acme
 
@@ -20,7 +20,7 @@ python3 skills/team-operations-read/scripts/read.py --data examples/acme/data --
 
 That writes [examples/acme/team-operations-read.html](examples/acme/team-operations-read.html), one self-contained page in the Leader Report style and the Landing Loop's visual family, with its Markdown twin and JSON. It runs in under a second, and a test checks it reproduces the committed files byte for byte.
 
-What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. The page draws all 27 areas of the framework: the 6 these exports can read, shaded by level, and the 21 they can't see, hatched. Team Orchestration reads level 3. Delivery Velocity and Quality & Experimentation read level 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read level 2 or below. No overall level, because that needs all 27 areas. (Illustrative.)
+What it says: start with Roadmap Discipline, because 43% of cycle work arrives after planning; tag each unplanned item with its source for 2 cycles, then cap the largest source. The page draws the 6 areas these exports can read as scorecard rows, each a band of levels (filled to the band's floor, the rest of the band dashed), and the 21 they can't see as one line. Team Orchestration reads level 3. Delivery Velocity and Quality & Experimentation read level 3 or above. Roadmap Discipline, Spec & Context Quality and Process & Iteration read level 2 or below. No overall level, because that needs all 27 areas. (Illustrative.)
 
 ## Install
 
@@ -40,10 +40,10 @@ Standalone: clone this repository and copy `skills/team-operations-read` into `~
 | **Reads** | Pull requests (GitHub, through `gh` or the GitHub connector), issues and cycles (Linear connector or API), and optional CSVs: squads, epics, retro actions, experiments, a team survey. Any tracker CSV maps by column name |
 | **Live data** | The Leader Report's own GitHub and Linear collectors, vendored unchanged at a pinned commit, read the exports as the tools return them. CSV is the fallback |
 | **Computes** | Cycle time by work type and squad, work in progress, unplanned share, planning accuracy, reopen rate, time to first review, review coverage, retro follow-through |
-| **Writes** | `read.html`, `read.md` and `read.json` in your output folder. No Landing Loop record key |
-| **Words** | Stage N, Stage N or above, Stage N or below, Stage N to M, conflicting evidence, not read. Never landed, watch or stalled: those are a bet's status, set only by did-it-land |
+| **Writes** | `read.html`, `read.md` and `read.json` in your output folder. No key in a Landing Loop project file |
+| **Words** | Stage N, Stage N or above, Stage N or below, Stage N to M, conflicting evidence, not read. Never landed, watch or stalled: those are a project's status, set only by did-it-land |
 
-**Record key:** none. A team read is not a bet, so it leaves `landing/<bet>.json` exactly as it found it. Each figure in `read.json` has the same fields the loop asks of a figure:
+**Key in the project file:** none. A team read is not a project, so it leaves `landing/<bet>.json` exactly as it found it. Each figure in `read.json` has the same fields the loop asks of a figure:
 
 ```json
 {
@@ -60,7 +60,7 @@ Standalone: clone this repository and copy `skills/team-operations-read` into `~
 }
 ```
 
-Before you show any prose about a read, `check_claims.py` blocks a stage the read does not support, an overall stage it withholds, a figure not in the ledger, and bet status words.
+Before you show any prose about a read, `check_claims.py` blocks a stage the read does not support, an overall stage it withholds, a figure not in the ledger, and project status words.
 
 ## Limits
 
@@ -74,6 +74,6 @@ Not yet run on a real team's data.
 
 ## Licence
 
-MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.1. Changes are in [CHANGELOG.md](CHANGELOG.md).
+MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.2. Changes are in [CHANGELOG.md](CHANGELOG.md).
 
 Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.

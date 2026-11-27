@@ -17,6 +17,7 @@ from pathlib import Path
 
 from helpers import ROOT
 
+import render_html
 from render_html import floor_fonts
 from vendored import load
 
@@ -95,10 +96,10 @@ class StatusWords(unittest.TestCase):
         self.assertIsNone(re.search(r'class="[^"]*\b(st|rd|ac)\b', body))
         for word in ("--landed", "--watch", "--stalled", "--brass"):
             self.assertNotIn(word, body)
-        for svg in svgkit.visuals_in(page):
-            for word in ("--landed", "--watch", "--stalled", "--brass", "sk-st"):
-                self.assertNotIn(word, svg, "the grid has no status colour, and no person's call to paint brass")
-        css = page.split("</style>", 1)[0].split(floor_fonts(svgkit.CSS), 1)[1]
+        frame = svgkit.frames_in(page)[0]
+        for word in ("--landed", "--watch", "--stalled", "--brass", 'class="sc-o"', 'class="st '):
+            self.assertNotIn(word, frame, "the rows have no status colour, and no person's call to paint brass")
+        css = page.split("</style>", 1)[0].split(floor_fonts(svgkit.CSS + svgkit.SCORECARD_CSS), 1)[1]
         brass = re.findall(r"[^}]*var\(--brass[^}]*}", css)
         self.assertTrue(brass and all(r.lstrip().startswith((".next", "}.next")) for r in brass), "brass is only the person who decides the next step")
         self.assertEqual(body.count('class="o"'), 1)
@@ -126,7 +127,7 @@ class Scannable(unittest.TestCase):
             'class="sk-hdr"',
             "<h1>Start with Roadmap Discipline.</h1>",
             'class="status"',
-            'class="sk-wide"',
+            'class="sc scg"',
             "What to do next",
             'class="cols"',
             "<details><summary>Each area in full</summary>",
@@ -157,50 +158,87 @@ class Scannable(unittest.TestCase):
 
 
 class Visual(unittest.TestCase):
-    """The area grid: every one of the 27 areas, read ones shaded by level, the rest hatched, the place to start ringed."""
+    """The areas read as scorecard rows: bands as pips, never an exact level; the unread areas as one line."""
 
     @classmethod
     def setUpClass(cls):
         cls.page = (SAMPLE / f"{STEM}.html").read_text(encoding="utf-8")
         cls.doc = json.loads((SAMPLE / f"{STEM}.json").read_text(encoding="utf-8"))
-        cls.visuals = svgkit.visuals_in(cls.page)
+        cls.read = [d for d in cls.doc["dimensions"] if d["read"] != "not_read"]
+        cls.visuals = []
 
-    def test_a_wide_and_a_tall_variant(self):
-        self.assertEqual(len(self.visuals), 2)
-        self.assertIn('class="sk-wide"', self.visuals[0])
-        self.assertIn('class="sk-tall"', self.visuals[1])
-        self.assertIn('viewBox="0 0 720 ', self.visuals[0])
-        self.assertIn('viewBox="0 0 340 ', self.visuals[1])
+    def css(self) -> str:
+        return self.page.split("<style>", 1)[1].split("</style>", 1)[0]
 
     def test_the_visual_draws_only_figures_the_page_prints(self):
         self.assertEqual(svgkit.unprinted(self.page), [])
 
-    def test_it_draws_every_area_and_hatches_the_unread_ones(self):
-        unread = sum(1 for d in self.doc["dimensions"] if d["read"] == "not_read")
-        for svg in self.visuals:
-            texts = " ".join(svgkit.texts_in(svg))
-            for d in self.doc["dimensions"]:
-                for word in d["name"].split():
-                    self.assertIn(word, texts, d["name"])
-            hid = re.search(r'<pattern id="([^"]+)"', svg).group(1)
-            self.assertEqual(svg.count(f'fill="url(#{hid})"'), unread + 1, "one hatched strip per unread area, and the key's")
-            self.assertEqual(svgkit.texts_in(svg).count("START HERE"), 1)
-            self.assertIn("CAN'T SEE FROM THESE EXPORTS", svgkit.texts_in(svg))
-        ids = re.findall(r'<pattern id="([^"]+)"', self.page)
-        self.assertEqual(len(ids), len(set(ids)), "each SVG has its own hatch id")
+    def test_one_frame_one_row_per_area_read_and_the_unread_as_one_line(self):
+        frames = svgkit.frames_in(self.page)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(re.findall(r'<span class="sc-n">([^<]+)</span>', frames[0]), [html.escape(d["name"]) for d in self.read])
+        unread = len(self.doc["dimensions"]) - len(self.read)
+        self.assertIn(f'<div class="sc-x">{unread} areas not visible in these exports</div>', frames[0])
+        self.assertEqual(frames[0].count('<span class="sc-w ink">Start here</span>'), 1)
+        start = next(d for d in self.read if d["id"] == self.doc["start_here"]["dimension"])
+        self.assertRegex(frames[0], rf'<span class="sc-n">{re.escape(start["name"])}</span>.*?<span class="sc-w ink">Start here</span>')
+
+    def test_bands_never_exact_levels(self):
+        frame = svgkit.frames_in(self.page)[0]
+        lines = re.findall(r'<span class="sc-l"><b>([^<]+)</b></span>', frame)
+        self.assertEqual(len(lines), len(self.read))
+        for line, d in zip(lines, self.read, strict=True):
+            self.assertRegex(line, r"^(level \d or (above|below)|level \d to \d|mixed evidence)$")
+            words, filled, dashed = render_html.band(d)
+            self.assertEqual(line, words)
+            if d["read"] == "stage":
+                self.assertEqual(line, f"level {d['stage']} or above" if d["stage"] >= 3 else f"level {d['stage']} or below")
+        pips = re.findall(r'<svg class="sc-pp".*?</svg>', frame)
+        self.assertEqual(len(pips), len(self.read))
+        for svg, d in zip(pips, self.read, strict=True):
+            _, filled, dashed = render_html.band(d)
+            self.assertEqual(svg.count('class="on"'), filled)
+            self.assertEqual(svg.count('class="off dash"'), dashed)
+        self.assertEqual(render_html.band({"read": "range", "floor": 1, "ceiling": 2}), ("level 2 or below", 1, 1))
+        self.assertEqual(render_html.band({"read": "range", "floor": 3, "ceiling": 5}), ("level 3 or above", 3, 2))
+        self.assertEqual(render_html.band({"read": "stage", "stage": 3}), ("level 3 or above", 3, 2))
 
     def test_the_visual_states_the_answer(self):
-        for svg in self.visuals:
-            self.assertIn('role="img"', svg)
-            label = html.unescape(re.search(r'aria-label="([^"]+)"', svg).group(1))
-            self.assertEqual(
-                label,
-                "These exports show 6 of the 27 Team Operations areas and can't see the other 21; start with Roadmap Discipline, read at level 2 or below.",
-            )
+        labels = [html.unescape(x) for x in re.findall(r'role="img" aria-label="([^"]+)"', self.page)]
+        self.assertEqual(
+            labels,
+            ["These exports show 6 of the 27 Team Operations areas and can't see the other 21; start with Roadmap Discipline, read at level 2 or below."],
+        )
+
+    # The scorecard grammar (landing-loop tools/SCORECARD-ROLLOUT.md, svgkit 1.2.0)
+
+    def test_no_text_inside_a_picture_and_no_picture_scales(self):
+        self.assertEqual(svgkit.svgs_with_text(self.page), [], "text inside an SVG")
+        self.assertEqual(svgkit.scaled_svgs_in(self.page), [], "a picture with a viewBox would scale")
+
+    def test_labels_render_12px_and_names_14px(self):
+        css = self.css()
+        self.assertEqual(set(svgkit.font_sizes(css)), {"var(--sc-m)", "var(--sc-n)"})
+        self.assertIn("--sc-m:calc(12px / var(--sc-z))", css)
+        self.assertIn("--sc-n:calc(14px / var(--sc-z))", css)
+        self.assertIn(".scg{--sc-z:1;", css, "a sample page has no zoom")
+
+    def test_no_box_inside_the_frame_and_no_overlap(self):
+        self.assertEqual(svgkit.boxes_in_frames(self.page, self.css()), [])
+        self.assertNotIn('class="chip', self.page.split("<details><summary>For your engineers", 1)[0])
+        self.assertNotIn("position:absolute", svgkit.SCORECARD_CSS)
+        self.assertNotIn("border", re.search(r"\.status\{[^}]*\}", render_html.PAGE_CSS).group(0), "words are text, never boxed chips")
+
+    def test_no_legacy_svgkit_primitive_draws_on_the_page(self):
+        import warnings
+
+        self.assertEqual(svgkit.legacy_in(self.page), [])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            render_html.page(self.doc)
 
     def test_public_copy_uses_the_plain_words(self):
         public = svgkit.page_text(self.page.split("<details><summary>For your engineers", 1)[0]).lower()
-        public += " " + " ".join(t for svg in self.visuals for t in svgkit.texts_in(svg)).lower()
         for word in ("dimension", "stage", "rubric", "bet ", "bets", "record key", "landing/", "eval", "spec template", "book a"):
             self.assertNotIn(word, public)
         md = (SAMPLE / f"{STEM}.md").read_text(encoding="utf-8").split("## For your engineers", 1)[0].lower()
@@ -216,8 +254,6 @@ class Visual(unittest.TestCase):
         sizes += [float(m) for m in re.findall(r'font-size="(\d+(?:\.\d+)?)"', self.page)]
         self.assertTrue(sizes)
         self.assertGreaterEqual(min(sizes), 11)
-        # The phone picture is 340 wide; at 390 and 375 the panel gives it 340px or more, so its 11px labels never shrink.
-        self.assertIn("@media (max-width:440px){.panel{margin:0 -8px;padding:16px 8px 14px}}", self.page)
         # The vendored template is untouched on disk: the page raises its small sizes as it inlines them.
         template = ROOT / "skills/team-operations-read/assets/vendor/template.html"
         self.assertIn("font:400 10px/16px", template.read_text(encoding="utf-8"))

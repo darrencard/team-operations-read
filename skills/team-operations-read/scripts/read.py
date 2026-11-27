@@ -32,7 +32,7 @@ from metrics import compute  # noqa: E402
 from render_html import LIMITS, UNSEEN, answer, level, page, plain, said, summary  # noqa: E402
 from rules import describe, read_all  # noqa: E402
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 RECHECK_DAYS = 30
 
 

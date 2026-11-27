@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2, 2026-11-27
+
+- The picture is scorecard rows in the grammar of the outcome scorecard on dacard.ai/update (svgkit 1.2.0, landing-loop 78784ef): one row per area these exports can read, five pips for levels 1 to 5 filled to the band's floor and dashed for the rest of the band, the band in words ("level 2 or below", "level 3 or above", never an exact level), START HERE in ink on the one to start with, and the 21 areas the exports can't see as one muted line. Geist Mono 12px for labels and figures, Geist 14px for names, no text inside a picture, no box inside the frame. The area grid, its panel and the boxed status chips are gone; words print as text.
+- README and SKILL.md in plain words: project, the project file. Keys, file names and flags are unchanged. SKILL.md uses the user's own word if they say bet.
+- Tests from the rollout recipe: no text inside an SVG, no scaled SVG, labels 12px and names 14px, no box inside the frame, no legacy svgkit primitive (rendered with DeprecationWarning as an error), one frame with one row per area read and the unread areas as one line, bands never exact levels, and the aria-label states the answer.
+
 ## 0.3.1, 2026-11-27
 
 - The HTML page follows the Landing Loop sample anatomy: the shared header (mark, DACARD, skill, date, version, blue Illustrative tag), where to start as the heading ("Start with Roadmap Discipline."), the area and count chips, the signature picture, one next step with the decider in brass and the re-check date, then the areas read and what the exports can't see in two columns. Each area in full, what would read the other areas, every figure with its source, and "For your engineers" (the stored reads, rule ids, command, overclaim check, record key) are folded.
