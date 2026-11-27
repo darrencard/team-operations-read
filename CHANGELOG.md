@@ -8,6 +8,7 @@
 - `check_claims.py` holds "level N" to the same bounds as "Stage N", and reads "caps it at level", "shows level" and "to reach level" as citations, not claims.
 - Tests: the picture draws only printed figures, every area appears and the unread ones are hatched, no status colour, an aria-label that states the answer, plain words in public copy, and the svgkit pin.
 - Design fix round 2: no text below 11px at any width (the page raises the vendored template's and svgkit's smaller sizes as it inlines them; the files on disk are unchanged); the header prints the plain name, Team operations read, and the code name moves to the engineers' fold, on the page and in the Markdown twin; public copy drops record, bet, the bar, PRD, ARR and tokens (decision logs, architecture notes, incident logs, pricing history; exports "do not capture").
+- On phones up to 440px the picture's panel gives it its full 340px, so its 11px labels render at 11px at 390 and 375 wide.
 
 ## 0.3.0, 2026-11-26
 

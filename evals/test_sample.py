@@ -216,6 +216,8 @@ class Visual(unittest.TestCase):
         sizes += [float(m) for m in re.findall(r'font-size="(\d+(?:\.\d+)?)"', self.page)]
         self.assertTrue(sizes)
         self.assertGreaterEqual(min(sizes), 11)
+        # The phone picture is 340 wide; at 390 and 375 the panel gives it 340px or more, so its 11px labels never shrink.
+        self.assertIn("@media (max-width:440px){.panel{margin:0 -8px;padding:16px 8px 14px}}", self.page)
         # The vendored template is untouched on disk: the page raises its small sizes as it inlines them.
         template = ROOT / "skills/team-operations-read/assets/vendor/template.html"
         self.assertIn("font:400 10px/16px", template.read_text(encoding="utf-8"))

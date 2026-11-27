@@ -77,6 +77,7 @@ main.solo{margin-left:0}
 .stack table,.stack tbody,.stack tr,.stack td{display:block}.stack tr:first-child{display:none}.stack tr{padding:10px 16px;border-bottom:1px solid var(--line)}
 .stack td{border:0;padding:3px 0;display:grid;grid-template-columns:118px 1fr;gap:12px}.stack td.num{text-align:left;white-space:normal}
 .stack td::before{content:attr(data-l);font:400 11px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
+@media (max-width:440px){.panel{margin:0 -8px;padding:16px 8px 14px}}
 """
 
 # The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk
