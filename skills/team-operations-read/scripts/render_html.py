@@ -39,26 +39,26 @@ main.solo{margin-left:0}
 .solo h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.04em;max-width:20ch;margin-bottom:20px}
 .solo .lede{margin-bottom:24px}
 .solo h2{margin-bottom:16px}
-.status{display:inline-block;font:400 10px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border:1px solid var(--line3);border-radius:3px;padding:1px 6px;white-space:nowrap}
+.status{display:inline-block;font:400 11px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border:1px solid var(--line3);border-radius:3px;padding:1px 6px;white-space:nowrap}
 .verdict{margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px}
 .panel{border:1px solid var(--line);border-radius:12px;background:var(--s1);padding:24px 28px 20px}
 @media (min-width:1100px){.panel .sk{display:grid;grid-template-columns:720px minmax(0,1fr);gap:16px 40px;align-items:start}.panel .sk figcaption{margin-top:0;flex-direction:column;align-items:flex-start}}
 .next{margin-top:28px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px 32px;align-items:baseline;border:1px solid var(--brass);border-radius:12px;padding:20px 24px;background:var(--brass-bg)}
-.next>b{font:400 10px/22px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
+.next>b{font:400 11px/22px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--brass)}
 .next p{margin:0;font-size:16px;line-height:1.5;color:var(--t1)}
 .next .who{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:10px;font:400 11.5px/16px var(--mono);color:var(--brass)}
-.next .who span::before{font-size:10px;letter-spacing:.1em;color:var(--t3);margin-right:8px}
+.next .who span::before{font-size:11px;letter-spacing:.1em;color:var(--t3);margin-right:8px}
 .next .who .o::before{content:"DECIDES"}.next .who .d::before{content:"RE-CHECK"}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 56px;align-items:start}
 .cols h3{margin-bottom:8px}
 .areas{margin:0;padding:0;list-style:none}
 .areas li{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;align-items:baseline}
 .areas li b{font-weight:500;color:var(--t1);font-size:14.5px}
-.areas li .lv{font:400 10px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
+.areas li .lv{font:400 11px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
 .areas li p{grid-column:1/-1;margin:0;font-size:13.5px;line-height:1.5;color:var(--t2)}
 .unseen{margin:0;padding:0;list-style:none}
 .unseen li{border-top:1px solid var(--line);padding:10px 0;font-size:13.5px;line-height:1.5;color:var(--t2)}
-.unseen li span{display:block;font:400 10px/18px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.unseen li span{display:block;font:400 11px/18px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
 .cols>div>p{font-size:13.5px;line-height:1.55;color:var(--t2);margin:0 0 10px}
 .limits{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--t2)}
 .limits li{margin-bottom:8px}
@@ -76,8 +76,19 @@ main.solo{margin-left:0}
 @media (max-width:980px){.foot{padding:24px 16px 48px}.solo .slide.cover{padding-top:24px}.cols,.next{grid-template-columns:1fr}.panel{padding:18px 16px 16px}
 .stack table,.stack tbody,.stack tr,.stack td{display:block}.stack tr:first-child{display:none}.stack tr{padding:10px 16px;border-bottom:1px solid var(--line)}
 .stack td{border:0;padding:3px 0;display:grid;grid-template-columns:118px 1fr;gap:12px}.stack td.num{text-align:left;white-space:normal}
-.stack td::before{content:attr(data-l);font:400 10px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
+.stack td::before{content:attr(data-l);font:400 11px/20px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}}
 """
+
+# The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk
+# (both are hash-pinned); the page raises any smaller size to this one as it inlines their rules.
+FONT_FLOOR = 11
+FONT_SIZE = re.compile(r"(font-size:\s*|font:[^;{}]*?)(\d+(?:\.\d+)?)px")
+
+
+def floor_fonts(css: str) -> str:
+    """Every font size below FONT_FLOOR, raised to it: font-size and the size in a font shorthand."""
+    return FONT_SIZE.sub(lambda m: m.group(1) + (str(FONT_FLOOR) if float(m.group(2)) < FONT_FLOOR else m.group(2)) + "px", css)
+
 
 LIMITS = [
     "It reads how work moves through the team, not whether what shipped worked. Pair it with outcome data before judging the team.",
@@ -98,6 +109,10 @@ WORDS = (
     (r"Book a full Team Operations read to review (.+?) directly\.", r"A full Team Operations read would review \1 directly."),
     (r"\bspec template\b", "build plan template"),
     (r"\bautomated evaluation\b", "automated quality tests"),
+    (r"\bdecision records\b", "decision logs"),
+    (r"\barchitecture records\b", "architecture notes"),
+    (r"\bincident records\b", "incident logs"),
+    (r"\bpricing records\b", "pricing history"),
 )
 UNSEEN = "Can't see from these exports"
 
@@ -400,7 +415,7 @@ def unseen(doc: dict) -> str:
         if group:
             items.append(f"<li><span>{e(fn)}</span>{e(', '.join(group))}</li>")
     count = sum(1 for d in doc["dimensions"] if d["read"] == "not_read")
-    lead = f"<p>{count} areas live in documents, conversations and decisions that tracker, source-control and survey exports do not record.</p>"
+    lead = f"<p>{count} areas live in documents, conversations and decisions that tracker, source-control and survey exports do not capture.</p>"
     return lead + f'<ul class="unseen">{"".join(items)}</ul>'
 
 
@@ -458,6 +473,7 @@ def engineers(doc: dict) -> str:
             continue
         rows.row(("", e(d["id"])), ("", e(describe(d))), ("ex", e(", ".join(f["rule"] for f in d["findings"]))))
     return (
+        f"<p>Skill: <code>team-operations-read</code> {e(doc['version'])}.</p>"
         "<p>Each area's read as the JSON stores it, with the rules behind it (references/rules.md). The page prints Stage as level and "
         "dimension as area.</p>"
         f"{rows.html()}"
@@ -474,7 +490,7 @@ def engineers(doc: dict) -> str:
 def page(doc: dict) -> str:
     ill = doc["illustrative"]
     sh = doc["start_here"]
-    header = sk.page_header("team-operations-read", date=doc["as_of"], version=f"v{doc['version']}", illustrative=ill)
+    header = sk.page_header("Team operations read", date=doc["as_of"], version=f"v{doc['version']}", illustrative=ill)
     read = [d for d in doc["dimensions"] if d["read"] != "not_read"]
     pic = sk.figure(
         area_grid(doc, "wide"),
@@ -522,7 +538,7 @@ def page(doc: dict) -> str:
     title = f"Team Operations read: {doc['company']}"
     return (
         '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-        f'<title>{e(title)}</title><style>{stylesheet()}{sk.CSS}{PAGE_CSS}</style></head><body><main class="solo">{cover}{detail}{more}'
+        f'<title>{e(title)}</title><style>{floor_fonts(stylesheet() + sk.CSS + PAGE_CSS)}</style></head><body><main class="solo">{cover}{detail}{more}'
         '<p class="foot">Every figure is computed in code from the exports named, and every level comes from a rule in references/rules.md. '
         "This read is about the team, not a project: it writes nothing into a Landing Loop project file.</p></main></body></html>\n"
     )

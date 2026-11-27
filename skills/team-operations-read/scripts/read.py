@@ -154,6 +154,8 @@ def render(doc: dict) -> str:
     lines += [
         "## For your engineers",
         "",
+        f"Skill: `team-operations-read` {doc['version']}.",
+        "",
         "Each area's read as read.json stores it, and the rules behind it (references/rules.md). This page prints Stage as level and dimension as area.",
         "",
         "| Area | Stored read | Rules |",

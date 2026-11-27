@@ -93,12 +93,12 @@ Team Operations scores how a product team works in 27 areas, each on five levels
 
 ## Can't see from these exports
 
-- **Strategy:** Market Intelligence, Decision Quality, Competitive Positioning. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the strategy documents, decision records and roadmap history directly.
+- **Strategy:** Market Intelligence, Decision Quality, Competitive Positioning. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the strategy documents, decision logs and roadmap history directly.
 - **Design:** Research & Discovery, Prototyping Speed, Experience Design, Design-to-Dev Handoff. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the research repository, prototypes and design system directly. Design-to-Dev Handoff: Team view (self-reported): 2.4 of 5 from 38 responses.
-- **Development:** Architecture & Systems, Build vs. Buy Decisions. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the architecture records and build-or-buy decisions directly.
+- **Development:** Architecture & Systems, Build vs. Buy Decisions. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the architecture notes and build-or-buy decisions directly.
 - **Intelligence:** Customer Signal Synthesis, Product Analytics, Data Strategy & Flywheel, Feedback Loop Quality. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the analytics setup and customer feedback pipeline directly.
-- **Operations:** Knowledge Management, Unit Economics, Security & Compliance, Reliability & Resilience. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the operating documents, cost reporting and incident records directly. Knowledge Management: Team view (self-reported): 1.9 of 5 from 38 responses.
-- **Go-to-Market:** Positioning & Messaging, Launch Execution, Adoption & Expansion, Pricing & Packaging. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the positioning, launch plans and pricing records directly.
+- **Operations:** Knowledge Management, Unit Economics, Security & Compliance, Reliability & Resilience. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the operating documents, cost reporting and incident logs directly. Knowledge Management: Team view (self-reported): 1.9 of 5 from 38 responses.
+- **Go-to-Market:** Positioning & Messaging, Launch Execution, Adoption & Expansion, Pricing & Packaging. Not readable from tracker, source-control or survey exports. A full Team Operations read would review the positioning, launch plans and pricing history directly.
 
 ## Every figure, with its source
 
@@ -160,6 +160,8 @@ Computed in code from the exports named; nothing is estimated.
 Where each file came from: cycles.csv, Illustrative tracker export; epics.csv, Illustrative tracker export; experiments.csv, Illustrative experiment log; items.csv, Illustrative tracker export; pull\_requests.csv, Illustrative GitHub export; retro\_actions.csv, Illustrative retro log; squads.csv, Illustrative team list; survey.csv, Illustrative team survey.
 
 ## For your engineers
+
+Skill: `team-operations-read` 0.3.1.
 
 Each area's read as read.json stores it, and the rules behind it (references/rules.md). This page prints Stage as level and dimension as area.
 

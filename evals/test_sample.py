@@ -17,6 +17,7 @@ from pathlib import Path
 
 from helpers import ROOT
 
+from render_html import floor_fonts
 from vendored import load
 
 svgkit = load("svgkit")
@@ -97,7 +98,7 @@ class StatusWords(unittest.TestCase):
         for svg in svgkit.visuals_in(page):
             for word in ("--landed", "--watch", "--stalled", "--brass", "sk-st"):
                 self.assertNotIn(word, svg, "the grid has no status colour, and no person's call to paint brass")
-        css = page.split("</style>", 1)[0].split(svgkit.CSS, 1)[1]
+        css = page.split("</style>", 1)[0].split(floor_fonts(svgkit.CSS), 1)[1]
         brass = re.findall(r"[^}]*var\(--brass[^}]*}", css)
         self.assertTrue(brass and all(r.lstrip().startswith((".next", "}.next")) for r in brass), "brass is only the person who decides the next step")
         self.assertEqual(body.count('class="o"'), 1)
@@ -205,6 +206,27 @@ class Visual(unittest.TestCase):
         md = (SAMPLE / f"{STEM}.md").read_text(encoding="utf-8").split("## For your engineers", 1)[0].lower()
         for word in ("dimension", "stage", "rubric", "bet ", "record key", "book a"):
             self.assertNotIn(word, md)
+        # The words a reader outside the loop does not know, as whole words.
+        for text in (public, md):
+            self.assertEqual(re.findall(r"\b(records?|bets?|the bar|prds?|arr|tokens?)\b", text), [])
+
+    def test_no_text_smaller_than_11px_at_any_width(self):
+        css = " ".join(re.findall(r"<style>(.*?)</style>", self.page, re.S) + re.findall(r'style="([^"]*)"', self.page))
+        sizes = [float(m) for m in re.findall(r"(?:font-size:\s*|font:[^;{}]*?)(\d+(?:\.\d+)?)px", css)]
+        sizes += [float(m) for m in re.findall(r'font-size="(\d+(?:\.\d+)?)"', self.page)]
+        self.assertTrue(sizes)
+        self.assertGreaterEqual(min(sizes), 11)
+        # The vendored template is untouched on disk: the page raises its small sizes as it inlines them.
+        template = ROOT / "skills/team-operations-read/assets/vendor/template.html"
+        self.assertIn("font:400 10px/16px", template.read_text(encoding="utf-8"))
+
+    def test_header_prints_the_plain_name_and_the_fold_the_code_name(self):
+        header = re.search(r'<header class="sk-hdr">.*?</header>', self.page, re.S).group(0)
+        self.assertIn("<span>Team operations read</span>", header)
+        self.assertNotIn("team-operations-read", header)
+        self.assertIn("<code>team-operations-read</code>", self.page.split("<details><summary>For your engineers", 1)[1])
+        md = (SAMPLE / f"{STEM}.md").read_text(encoding="utf-8")
+        self.assertIn("Skill: `team-operations-read`", md.split("## For your engineers", 1)[1])
 
 
 class PythonFloor(unittest.TestCase):
