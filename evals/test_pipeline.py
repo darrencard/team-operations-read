@@ -207,5 +207,5 @@ class StartHere(unittest.TestCase):
         self.assertEqual(doc["start_here"]["recheck_figure"], "unplanned_share")
         md = render(doc)
         self.assertIn("**Re-check:** Share of cycle work added after the cycle started, now 43%.", md)
-        self.assertIn("**Decides:** VP Product and VP Engineering.", md)
+        self.assertIn("**Decides:** Head of Product, Quoting squad.", md)
         self.assertIn("2026-12-20", md)

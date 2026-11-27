@@ -21,9 +21,14 @@ Several repositories can go into one file: pass --input more than once.
 
 from __future__ import annotations
 
+import sys
+
+# Check the interpreter before importing anything that needs 3.11 (datetime.UTC, for one).
+if sys.version_info < (3, 11):  # noqa: UP036
+    sys.exit("team-operations-read needs Python 3.11 or later; try python3.12")
+
 import argparse
 import csv
-import sys
 from datetime import date
 from pathlib import Path
 

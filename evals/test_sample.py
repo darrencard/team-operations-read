@@ -100,6 +100,67 @@ class StatusWords(unittest.TestCase):
         self.assertNotIn("<script", page)
 
 
+ORG_CHART = {"Head of Product, Quoting squad", "Lead, Quoting squad", "Tech lead, Quoting squad", "Product manager, Quoting squad"}
+ENTRY = ["read.py", "check_claims.py", "from_csv.py", "from_github.py", "from_linear.py"]
+
+
+class Scannable(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.page = (SAMPLE / f"{STEM}.html").read_text(encoding="utf-8")
+
+    def test_top_is_an_answer_five_lines_and_the_start_here_step_then_one_fold(self):
+        top, rest = self.page.split('<details class="more">', 1)
+        self.assertEqual(self.page.count('<details class="more">'), 1)
+        self.assertIn('<p class="answer">Start with Roadmap Discipline.', top)
+        five = re.search(r'<ul class="five">(.*?)</ul>', top, re.S).group(1)
+        self.assertEqual(five.count("<li>"), 5)
+        self.assertIn('class="need"', top)
+        self.assertNotIn('class="need"', rest)
+        words = len(visible(top.split("</style>", 1)[1]).split())
+        self.assertLess(words, 250, "the unfolded top must read in 30 seconds")
+
+    def test_one_owner_from_the_org_chart(self):
+        doc = json.loads((SAMPLE / f"{STEM}.json").read_text(encoding="utf-8"))
+        self.assertIn(doc["decides"], ORG_CHART)
+        self.assertEqual(re.findall(r'class="who">([^<]*)<', self.page), ["Head of Product, Quoting squad"])
+        for text in (self.page, (SAMPLE / f"{STEM}.md").read_text(encoding="utf-8")):
+            self.assertIsNone(re.search(r"\bVP\b|on-call|Engineering\.", text))
+
+    def test_selection_and_focus_print_in_ink_not_status_green(self):
+        css = self.page.split("</style>", 1)[0]
+        own = css.rsplit("::selection", 1)[1]
+        self.assertTrue(own.startswith("{background:var(--t1)"))
+        self.assertIn(":focus-visible{outline:2px solid var(--t1)", own)
+        self.assertLess(css.find("::selection{background:var(--landed)"), css.rfind("::selection{background:var(--t1)"))
+
+
+class PythonFloor(unittest.TestCase):
+    def test_every_entry_script_checks_the_version_before_any_other_import(self):
+        import ast
+
+        for name in ENTRY:
+            tree = ast.parse((ROOT / "skills/team-operations-read/scripts" / name).read_text(encoding="utf-8"))
+            body = [n for n in tree.body if not (isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant))]
+            kinds = [type(n).__name__ for n in body[:3]]
+            self.assertEqual(kinds, ["ImportFrom", "Import", "If"], name)
+            self.assertEqual(body[0].module, "__future__", name)
+            self.assertEqual([a.name for a in body[1].names], ["sys"], name)
+            self.assertIn("version_info", ast.unparse(body[2].test), name)
+
+    def test_an_old_python_gets_the_plain_message(self):
+        old = next((p for p in ("/usr/bin/python3", "/usr/local/bin/python3.9", "/usr/bin/python3.9") if Path(p).exists()), None)
+        if not old:
+            self.skipTest("no Python older than 3.11 on this machine")
+        probe = subprocess.run([old, "-c", "import sys; print(sys.version_info >= (3, 11))"], capture_output=True, text=True, check=False)
+        if probe.stdout.strip() != "False":
+            self.skipTest("the system python3 is 3.11 or later")
+        for name in ENTRY:
+            r = subprocess.run([old, str(ROOT / "skills/team-operations-read/scripts" / name), "--help"], capture_output=True, text=True, check=False)
+            self.assertEqual(r.returncode, 1, name)
+            self.assertEqual(r.stderr.strip(), "team-operations-read needs Python 3.11 or later; try python3.12", name)
+
+
 class OutsideTheLoop(unittest.TestCase):
     def test_writes_no_record_key_and_leaves_a_record_byte_identical(self):
         record = {

@@ -74,7 +74,7 @@ For GitHub pull requests use `scripts/from_github.py` (it drops bots, drafts and
 python3 scripts/read.py --data <folder> --as-of YYYY-MM-DD [--window-days 90] [--company "<name>"] [--decides "<who>"] --out run
 ```
 
-It writes `run/read.json`, `run/read.md` and `run/read.html`. `--decides` names who owns the start-here step (ask the user; never guess a name). Exit code 2 means bad input; the message names the file, line and column. Fix the export, not the script.
+It writes `run/read.json`, `run/read.md` and `run/read.html`. `--decides` names the one owner of the start-here step, a single role or person (ask the user; never guess a name, and never name two). Exit code 2 means bad input; the message names the file, line and column. Fix the export, not the script.
 
 ### 3. Show
 

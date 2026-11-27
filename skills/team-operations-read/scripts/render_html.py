@@ -5,6 +5,10 @@ byte-identical at a pinned commit), so it is the same brand family as the deck a
 Only a few rules for this page's layout are added. It follows the report's references/design.md: mono
 capitals for labels, sans for sentences; hairlines, not boxes; grey for possible stages and ink for the
 read; brass only for a person's call (who decides the start-here step, and the re-check date).
+Selection and focus print in ink: the template paints them green, and green is did-it-land's colour.
+
+A leader gets the point from the top: a one-line answer, five summary lines, the start-here step.
+Everything else folds under one <details>.
 
 A team read has no bet status, so the page uses no status colour. landed, watch and stalled are a bet's
 words and only did-it-land sets them. This page prints stages, ranges and "not read".
@@ -57,8 +61,14 @@ main.solo{margin-left:0}
 .need .when::before{content:"RE-CHECK";font-size:10px;letter-spacing:.1em;color:var(--t3);margin-right:6px}
 .nr td:first-child{white-space:nowrap}
 .solo details{margin-top:14px}
+.answer{font-size:22px;line-height:30px;color:var(--t1);max-width:760px;margin:6px 0 14px}
+.five{margin:0;padding-left:18px;color:var(--t2);font-size:14px;line-height:24px;max-width:820px}
+details.more{margin:0}
+details.more>summary{max-width:1120px;margin:0 auto;padding:22px 40px;cursor:pointer;font:400 11px/16px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t1);border-top:1px solid var(--line)}
+::selection{background:var(--t1);color:var(--bg)}
+:focus-visible{outline:2px solid var(--t1);outline-offset:3px;border-radius:3px}
 .foot{max-width:1120px;margin:0 auto;padding:28px 40px 64px;color:var(--t3);font-size:12px}
-@media (max-width:980px){.rows>div{grid-template-columns:1fr;gap:2px}.foot{padding:24px 16px 48px}.solo .slide.cover{padding-top:48px}}
+@media (max-width:980px){.rows>div{grid-template-columns:1fr;gap:2px}.foot{padding:24px 16px 48px}details.more>summary{padding:18px 16px}.solo .slide.cover{padding-top:48px}}
 """
 
 MARK = (
@@ -242,6 +252,38 @@ def ledger(doc: dict) -> str:
     )
 
 
+def answer(doc: dict) -> str:
+    """The one line a leader reads first: where to start, and the figure that says why."""
+    sh = doc["start_here"]
+    if not sh:
+        return "No dimension is bounded yet. Add squads.csv, then items.csv from your tracker, and run the read again."
+    f = doc["figures"].get(sh["recheck_figure"]) if sh["recheck_figure"] else None
+    why = f" {f['label']}: {f['display']}." if f else ""
+    return f"Start with {sh['name']}.{why}"
+
+
+def summary(doc: dict) -> list[str]:
+    """Five lines: what was read, the higher and lower reads, the open ones, and what was not read."""
+    dims = doc["dimensions"]
+    read = [d for d in dims if d["read"] != "not_read"]
+    higher = [d for d in read if d["read"] in ("stage", "range") and (d["stage"] if d["read"] == "stage" else d["floor"]) >= 3]
+    lower = [d for d in read if d["read"] in ("stage", "range") and (d["stage"] if d["read"] == "stage" else d["ceiling"]) <= 2]
+    rest = [d for d in read if d not in higher and d not in lower]
+    ov = doc["overall"]
+    overall = f"Overall Stage {ov['stage']} ({ov['stage_name']})." if ov["claimed"] else "No overall stage: that needs all 27."
+
+    def names(ds: list[dict]) -> str:
+        return "; ".join(f"{d['name']} ({'Stage ' + str(d['stage']) if d['read'] == 'stage' else describe(d)})" for d in ds) if ds else "none"
+
+    return [
+        f"Read {len(read)} of 27 dimensions from {len(doc['sources'])} exports over {doc['window']['days']} days. {overall}",
+        f"Stage 3 or higher: {names(higher)}.",
+        f"Stage 2 or lower: {names(lower)}.",
+        f"Open or mixed: {names(rest)}.",
+        f"Not read: {len(dims) - len(read)} dimensions these exports do not record. Re-check on {doc['recheck_on']}.",
+    ]
+
+
 def page(doc: dict) -> str:
     dims = doc["dimensions"]
     read = [d for d in dims if d["read"] != "not_read"]
@@ -263,18 +305,21 @@ def page(doc: dict) -> str:
     facts_html = "".join(f"<span><b>{e(v)}</b>{e(k)}</span>" for v, k in facts)
     cover_meta = meta(f"Read {doc['as_of']}", f"{doc['window']['start']} to {doc['window']['end']}", f"team-operations-read {doc['version']}", illustrative=ill)
     limits = "".join(f"<li>{e(x)}</li>" for x in LIMITS)
+    five = "".join(f"<li>{e(x)}</li>" for x in summary(doc))
     return (
         '<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
         f'<title>{e(title)}</title><style>{stylesheet()}{PAGE_CSS}</style></head><body><main class="solo">'
         f'<section class="slide cover"><div class="brand">{MARK}<span translate="no">DACARD</span></div>{cover_meta}'
-        f'<h1>{e(title)}</h1><p class="lede">{e(lede)}</p><div class="facts">{facts_html}</div></section>'
+        f'<h1>{e(title)}</h1><p class="answer">{e(answer(doc))}</p><ul class="five">{five}</ul></section>'
         f"{start_here(doc)}"
+        '<details class="more"><summary>The full read: scorecard, each dimension, what is not read, and the evidence ledger</summary>'
+        f'<section class="slide">{meta("Coverage", illustrative=ill)}<p class="lede">{e(lede)}</p><div class="facts">{facts_html}</div></section>'
         f'<section class="slide">{meta("Scorecard", illustrative=ill)}<h2>What the exports can read</h2>{scorecard(doc, read)}</section>'
         f"{''.join(dimension_section(doc, d) for d in read)}"
         f"{not_read(doc)}"
         f'<section class="slide">{meta("How to use this read", illustrative=ill)}<h2>Where to look, not a grade</h2>'
         f'<div class="card"><ul>{limits}</ul></div></section>'
-        f"{ledger(doc)}"
+        f"{ledger(doc)}</details>"
         '<p class="foot">Every figure is computed in code from the exports named, and every stage comes from a rule in references/rules.md. '
         "This read is about the team, not a bet: it writes nothing into a Landing Loop record.</p></main></body></html>\n"
     )

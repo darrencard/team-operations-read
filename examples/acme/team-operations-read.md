@@ -1,5 +1,13 @@
 # Team Operations read: Acme (Illustrative)
 
+**Start with Roadmap Discipline. Share of cycle work added after the cycle started: 43%.**
+
+- Read 6 of 27 dimensions from 8 exports over 90 days. No overall stage: that needs all 27.
+- Stage 3 or higher: Delivery Velocity (Stage 3 or above); Quality & Experimentation (Stage 3 or above); Team Orchestration (Stage 3).
+- Stage 2 or lower: Roadmap Discipline (Stage 2 or below); Spec & Context Quality (Stage 2 or below); Process & Iteration (Stage 2 or below).
+- Open or mixed: none.
+- Not read: 21 dimensions these exports do not record. Re-check on 2026-12-20.
+
 Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 dimensions read from cycles, epics, experiments, items, pull_requests, retro_actions, squads, survey.
 
 > Illustrative: every figure below comes from invented sample data, not a real company.
@@ -10,7 +18,7 @@ Window 2026-08-23 to 2026-11-20 (90 days). 6 of 27 dimensions read from cycles, 
 
 **Re-check:** Share of cycle work added after the cycle started, now 43%. Run this read again on 2026-12-20 with the same window to see whether it moved.
 
-**Decides:** VP Product and VP Engineering.
+**Decides:** Head of Product, Quoting squad.
 
 | Dimension | Function | Read | Next step |
 |---|---|---|---|

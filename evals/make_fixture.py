@@ -121,7 +121,7 @@ def main() -> None:
         "company": "Acme",
         "illustrative": True,
         "note": "Invented sample data. Acme is not a real company and no figure here describes one.",
-        "decides": "VP Product and VP Engineering",
+        "decides": "Head of Product, Quoting squad",
         "systems": {
             "items.csv": "Illustrative tracker export",
             "cycles.csv": "Illustrative tracker export",

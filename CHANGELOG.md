@@ -9,6 +9,10 @@
 - `read.py --stem` names the outputs and `--decides` names who owns the start-here step. The page prints that person and the re-check date in brass, and uses no status colour.
 - The overclaim check blocks landed, watch and stalled: those are a bet's status words, set only by did-it-land.
 - The Acme team's quoting squad is now "Quoting", to match the Landing Loop's Acme brief.
+- The page opens with a one-line answer, five summary lines and the start-here step; the rest folds under one `<details>`. The Markdown opens the same way.
+- The start-here step has one owner from the Acme org chart: Head of Product, Quoting squad.
+- Every entry script checks for Python 3.11 before any other import, so Python 3.9 gets a plain message, not an ImportError.
+- Selection and focus print in ink; the template's green is did-it-land's colour.
 
 ## 0.1.0, 2026-11-26
 

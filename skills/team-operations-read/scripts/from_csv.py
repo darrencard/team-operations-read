@@ -14,9 +14,14 @@ The mapping is printed so the user can confirm it before the read runs.
 
 from __future__ import annotations
 
+import sys
+
+# Check the interpreter before importing anything that needs 3.11 (datetime.UTC, for one).
+if sys.version_info < (3, 11):  # noqa: UP036
+    sys.exit("team-operations-read needs Python 3.11 or later; try python3.12")
+
 import argparse
 import csv
-import sys
 from pathlib import Path
 
 from inputs import SPECS, note_system

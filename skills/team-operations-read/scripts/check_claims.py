@@ -14,10 +14,15 @@ Errors (exit 1):
 
 from __future__ import annotations
 
+import sys
+
+# Check the interpreter before importing anything that needs 3.11 (datetime.UTC, for one).
+if sys.version_info < (3, 11):  # noqa: UP036
+    sys.exit("team-operations-read needs Python 3.11 or later; try python3.12")
+
 import argparse
 import json
 import re
-import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

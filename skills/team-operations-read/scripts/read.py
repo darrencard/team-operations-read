@@ -13,9 +13,14 @@ and never opens one.
 
 from __future__ import annotations
 
+import sys
+
+# Check the interpreter before importing anything that needs 3.11 (datetime.UTC, for one).
+if sys.version_info < (3, 11):  # noqa: UP036
+    sys.exit("team-operations-read needs Python 3.11 or later; try python3.12")
+
 import argparse
 import json
-import sys
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -24,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from framework import FUNCTIONS  # noqa: E402
 from inputs import InputError, load  # noqa: E402
 from metrics import compute  # noqa: E402
-from render_html import LIMITS, page  # noqa: E402
+from render_html import LIMITS, answer, page, summary  # noqa: E402
 from rules import describe, read_all  # noqa: E402
 
 VERSION = "0.3.0"
@@ -74,6 +79,10 @@ def render(doc: dict) -> str:
     read = [d for d in dims if d["read"] != "not_read"]
     lines = [
         f"# Team Operations read: {cell(doc['company'])}{tag}",
+        "",
+        f"**{answer(doc)}**",
+        "",
+        *[f"- {x}" for x in summary(doc)],
         "",
         f"Window {doc['window']['start']} to {doc['window']['end']} ({doc['window']['days']} days). "
         f"{len(read)} of 27 dimensions read from {', '.join(doc['sources']) or 'no exports'}.",
@@ -160,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--as-of", required=True, help="last day of the window, YYYY-MM-DD")
     ap.add_argument("--window-days", type=int, default=90)
     ap.add_argument("--company")
-    ap.add_argument("--decides", help="who decides the start-here step, such as 'VP Product and VP Engineering'")
+    ap.add_argument("--decides", help="who decides the start-here step, one role from the org chart, such as 'Head of Product, Quoting squad'")
     ap.add_argument("--out", type=Path, default=Path("run"))
     ap.add_argument("--stem", default="read", help="file name for the three outputs, without the extension (default: read)")
     a = ap.parse_args(argv)
