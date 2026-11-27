@@ -91,7 +91,7 @@ class Readme(unittest.TestCase):
         self.assertIn("/plugin marketplace add darrencard/landing-loop", self.text)
         self.assertIn("/plugin install team-operations-read@landing-loop", self.text)
         self.assertIn("Not yet run on a real team's data.", self.text)
-        self.assertIn("Claude is a trademark of Anthropic", self.text)
+        self.assertIn("Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.", self.text)
         self.assertIn("reads the team that runs the bets", self.text)
 
 

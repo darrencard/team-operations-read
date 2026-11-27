@@ -76,4 +76,4 @@ Not yet run on a real team's data.
 
 MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.0. Changes are in [CHANGELOG.md](CHANGELOG.md).
 
-Claude is a trademark of Anthropic, PBC. This project is not made or endorsed by Anthropic.
+Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.
