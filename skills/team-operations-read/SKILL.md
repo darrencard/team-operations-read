@@ -4,7 +4,7 @@ description: Scores how a product team works against Dacard's Team Operations fr
 license: MIT. See LICENSE in the repository root.
 metadata:
   author: Dacard
-  version: "0.3.2"
+  version: "0.3.3"
 ---
 
 # Team Operations read

@@ -74,6 +74,6 @@ Not yet run on a real team's data.
 
 ## Licence
 
-MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.2. Changes are in [CHANGELOG.md](CHANGELOG.md).
+MIT. Built by [Dacard](https://www.dacard.ai). Version 0.3.3. Changes are in [CHANGELOG.md](CHANGELOG.md).
 
 Claude and Claude Code are trademarks of Anthropic, PBC. These skills are independent and not affiliated with or endorsed by Anthropic.

@@ -41,7 +41,7 @@ PAGE_CSS = """
 main.solo{margin-left:0}
 .solo .slide{min-height:0}
 .solo .slide.cover{min-height:0;padding-top:40px;padding-bottom:48px;justify-content:flex-start}
-.solo h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.04em;max-width:20ch;margin-bottom:20px}
+.solo h1{font-size:clamp(34px,4.6vw,60px);line-height:1;letter-spacing:-.04em;text-wrap:balance;margin-bottom:20px}
 .solo .lede{margin-bottom:24px}
 .solo h2{margin-bottom:16px}
 .status{display:inline-block;font:400 12px/16px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--t1);white-space:nowrap}
@@ -67,7 +67,7 @@ main.solo{margin-left:0}
 .limits li{margin-bottom:8px}
 .solo details{margin-top:4px}
 .solo details>*:not(summary){margin-top:12px}
-.solo details p,.solo details li{margin:0 0 10px;font-size:13px;color:var(--t2);max-width:80ch}
+.solo details p,.solo details li{margin:0 0 10px;font-size:13px;color:var(--t2)}
 .solo details ul{padding-left:18px}
 .solo details h3{margin:22px 0 6px}
 .solo details .q{font-style:italic}
@@ -83,6 +83,9 @@ main.solo{margin-left:0}
 .scg .sc-l{text-transform:uppercase;letter-spacing:.06em}
 .scg .sc-g{grid-column:1/-1;font-family:var(--mono);font-size:var(--sc-m);line-height:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);padding:18px 0 6px;border-top:1px solid var(--line2)}
 .scg .sc-g+.sc-r{border-top-color:transparent;padding-top:6px}
+/* Full column (site rule since 2026-11-25): every title and text block runs the content column, the scorecard frame's width. */
+.solo h1,.solo h2,.solo h3,.solo .lede,.solo .next,.solo p,.solo li,.solo .sk figcaption{max-width:none}
+.solo h1{text-wrap:balance}.solo .lede,.solo p,.solo li,.solo .sk figcaption{text-wrap:pretty}
 """
 
 # The smallest text the page prints, at every width. The vendored template and svgkit keep their own sizes on disk

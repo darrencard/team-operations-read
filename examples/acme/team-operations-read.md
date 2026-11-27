@@ -161,7 +161,7 @@ Where each file came from: cycles.csv, Illustrative tracker export; epics.csv, I
 
 ## For your engineers
 
-Skill: `team-operations-read` 0.3.2.
+Skill: `team-operations-read` 0.3.3.
 
 Each area's read as read.json stores it, and the rules behind it (references/rules.md). This page prints Stage as level and dimension as area.
 

@@ -1,6 +1,6 @@
 {
   "name": "team-operations-read",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Score how a product team works against Dacard's Team Operations framework, from GitHub, Linear or CSV exports. Every figure is computed in code with its source and window, the read claims no stage the evidence does not support, and it renders one HTML page in the Leader Report style. Outside the Landing Loop's bet record: it reads the team that runs the bets.",
   "author": {
     "name": "Dacard"

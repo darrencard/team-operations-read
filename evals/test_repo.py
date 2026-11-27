@@ -29,12 +29,12 @@ class Versions(unittest.TestCase):
         project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
         skill = re.search(r'version: "([^"]+)"', (SKILL / "SKILL.md").read_text(encoding="utf-8")).group(1)
         sample = json.loads((ROOT / "examples/acme/team-operations-read.json").read_text(encoding="utf-8"))["version"]
-        self.assertEqual({plugin["version"], project, skill, VERSION, sample}, {"0.3.2"})
+        self.assertEqual({plugin["version"], project, skill, VERSION, sample}, {"0.3.3"})
         self.assertEqual(plugin["name"], "team-operations-read")
 
     def test_changelog_has_a_dated_entry(self):
         text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-        self.assertEqual(re.search(r"^## (.+)$", text, re.M).group(1), "0.3.2, 2026-11-27")
+        self.assertEqual(re.search(r"^## (.+)$", text, re.M).group(1), "0.3.3, 2026-11-27")
 
     def test_skill_frontmatter(self):
         text = (SKILL / "SKILL.md").read_text(encoding="utf-8")
